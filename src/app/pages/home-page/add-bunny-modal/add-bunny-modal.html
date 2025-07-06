@@ -1,0 +1,70 @@
+<!-- Add Bunny Modal -->
+<div class="modal fade" [class.show]="showModal" [style.display]="showModal ? 'block' : 'none'">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-plus-circle me-2"></i>
+          Add New Bunny
+        </h5>
+        <button type="button" class="btn-close" (click)="closeModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="error" class="alert alert-danger mb-3">
+          {{ error }}
+        </div>
+
+        <form>
+          <div class="mb-3">
+            <label for="bunnyName" class="form-label">Bunny Name</label>
+            <input type="text" class="form-control" id="bunnyName"
+                   [(ngModel)]="newBunny.name" name="name"
+                   placeholder="Enter bunny name" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Bunny Color</label>
+            <div class="color-picker">
+              <div class="color-option" *ngFor="let color of bunnyColors"
+                   [class.selected]="newBunny.color === color.name"
+                   (click)="newBunny.color = color.name">
+                <div class="color-swatch" [style.background-color]="color.hex"></div>
+                <span class="color-name">{{ color.name }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="happinessSlider" class="form-label">
+              Starting Happiness: {{ newBunny.happiness }}/10
+            </label>
+            <input type="range" class="form-range" id="happinessSlider"
+                   [(ngModel)]="newBunny.happiness" name="happiness"
+                   min="0" max="10" step="0.5">
+            <div class="d-flex justify-content-between">
+              <small class="text-muted">Sad (0)</small>
+              <small class="text-muted">Happy (10)</small>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary"
+                (click)="closeModal()"
+                [disabled]="loading">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-primary"
+                (click)="addBunny()"
+                [disabled]="!newBunny.name.trim() || loading">
+          <i class="bi bi-plus-circle me-1" *ngIf="!loading"></i>
+          <span class="spinner-border spinner-border-sm me-1" *ngIf="loading"></span>
+          {{ loading ? 'Adding...' : 'Add Bunny' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Backdrop -->
+<div class="modal-backdrop fade show" *ngIf="showModal"></div>

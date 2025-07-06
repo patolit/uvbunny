@@ -21,6 +21,7 @@ export interface Bunny {
   happiness: number;
   lastFed: string;
   notes?: string;
+  color?: string;
 }
 
 export interface BaseConfiguration {

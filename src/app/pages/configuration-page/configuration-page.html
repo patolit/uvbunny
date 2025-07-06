@@ -9,7 +9,7 @@
           </h1>
 
           <div class="row">
-            <div class="col-md-6">
+            <div class="col-12">
               <div class="card border-primary">
                 <div class="card-header bg-primary text-white">
                   <i class="bi bi-database me-2"></i>
@@ -17,44 +17,18 @@
                 </div>
                 <div class="card-body">
                   <div class="d-flex align-items-center mb-3">
-                    <div class="badge bg-success me-2">
-                      <i class="bi bi-check-circle"></i>
+                    <div class="badge" [ngClass]="firebaseConnected ? 'bg-success' : 'bg-danger'">
+                      <i class="bi" [ngClass]="firebaseConnected ? 'bi-check-circle' : 'bi-x-circle'"></i>
                     </div>
-                    <span>Connected to Firebase</span>
+                    <span class="ms-2">{{ firebaseStatus }}</span>
                   </div>
-                  <p class="card-text small text-muted">
+                  <p class="card-text small text-muted" *ngIf="firebaseConnected">
                     Your bunny data is safely stored in the cloud and
                     synchronized across devices.
                   </p>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-md-6">
-              <div class="card border-info">
-                <div class="card-header bg-info text-white">
-                  <i class="bi bi-bell me-2"></i>
-                  Notifications
-                </div>
-                <div class="card-body">
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="feedingReminders" checked>
-                    <label class="form-check-label" for="feedingReminders">
-                      Feeding Reminders
-                    </label>
-                  </div>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="happinessAlerts" checked>
-                    <label class="form-check-label" for="happinessAlerts">
-                      Happiness Alerts
-                    </label>
-                  </div>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="healthReminders">
-                    <label class="form-check-label" for="healthReminders">
-                      Health Check Reminders
-                    </label>
-                  </div>
+                  <p class="card-text small text-danger" *ngIf="!firebaseConnected">
+                    Unable to connect to Firebase. Please check your configuration.
+                  </p>
                 </div>
               </div>
             </div>
@@ -74,7 +48,7 @@
                       Lettuce Happiness Value
                     </label>
                     <input type="number" class="form-control" id="lettuceScore"
-                           value="1" min="0" max="10">
+                           [(ngModel)]="lettuceScore" min="0" max="10">
                     <div class="form-text">Default: 1 point</div>
                   </div>
                   <div class="mb-3">
@@ -83,7 +57,7 @@
                       Carrot Happiness Value
                     </label>
                     <input type="number" class="form-control" id="carrotScore"
-                           value="3" min="0" max="10">
+                           [(ngModel)]="carrotScore" min="0" max="10">
                     <div class="form-text">Default: 3 points</div>
                   </div>
                 </div>
@@ -103,7 +77,7 @@
                       Play Activity Score
                     </label>
                     <input type="number" class="form-control" id="playScore"
-                           value="2" min="0" max="10">
+                           [(ngModel)]="playScore" min="0" max="10">
                     <div class="form-text">Default: 2 points</div>
                   </div>
                   <div class="mb-3">
@@ -112,7 +86,7 @@
                       General Reward Score
                     </label>
                     <input type="number" class="form-control" id="rewardScore"
-                           value="1" min="0" max="10">
+                           [(ngModel)]="rewardScore" min="0" max="10">
                     <div class="form-text">Default: 1 point</div>
                   </div>
                 </div>
@@ -120,49 +94,26 @@
             </div>
           </div>
 
-          <div class="row mt-4">
-            <div class="col-12">
-              <div class="card border-warning">
-                <div class="card-header bg-warning text-dark">
-                  <i class="bi bi-sliders me-2"></i>
-                  Happiness Thresholds
-                </div>
-                <div class="card-body">
-                  <div class="row">
-                    <div class="col-md-4">
-                      <label for="lowThreshold" class="form-label">Low Happiness Alert</label>
-                      <input type="range" class="form-range" id="lowThreshold" min="0" max="10" value="3">
-                      <div class="text-center">
-                        <span class="badge bg-danger">3</span>
-                      </div>
-                    </div>
-                    <div class="col-md-4">
-                      <label for="mediumThreshold" class="form-label">Medium Happiness</label>
-                      <input type="range" class="form-range" id="mediumThreshold" min="0" max="10" value="6">
-                      <div class="text-center">
-                        <span class="badge bg-warning">6</span>
-                      </div>
-                    </div>
-                    <div class="col-md-4">
-                      <label for="highThreshold" class="form-label">High Happiness Goal</label>
-                      <input type="range" class="form-range" id="highThreshold" min="0" max="10" value="8">
-                      <div class="text-center">
-                        <span class="badge bg-success">8</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+
 
           <div class="row mt-4">
             <div class="col-12 text-center">
-              <button class="btn btn-primary btn-lg me-3">
+              <div *ngIf="error" class="alert alert-danger mb-3">
+                {{ error }}
+              </div>
+              <div *ngIf="loading" class="text-muted mb-3">
+                <i class="bi bi-arrow-clockwise spin me-2"></i>
+                Loading configuration...
+              </div>
+              <button class="btn btn-primary btn-lg me-3"
+                      (click)="saveConfiguration()"
+                      [disabled]="saving || loading">
                 <i class="bi bi-save me-2"></i>
-                Save Configuration
+                {{ saving ? 'Saving...' : 'Save Configuration' }}
               </button>
-              <button class="btn btn-outline-secondary btn-lg">
+              <button class="btn btn-outline-secondary btn-lg"
+                      (click)="resetToDefaults()"
+                      [disabled]="saving || loading">
                 <i class="bi bi-arrow-clockwise me-2"></i>
                 Reset to Defaults
               </button>

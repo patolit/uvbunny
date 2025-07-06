@@ -139,3 +139,4 @@ Once Firebase is connected, you can:
 2. Update happiness levels
 3. View all bunny data in Firebase Console
 4. Deploy to production with the same Firebase project 
+ 
