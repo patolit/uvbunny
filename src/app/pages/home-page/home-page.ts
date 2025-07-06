@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FirebaseService, Bunny } from '../../services/firebase';
 import { BunnyChart } from './bunny-chart/bunny-chart';
 import { AddBunnyModal } from './add-bunny-modal/add-bunny-modal';
+import { Observable, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home-page',
@@ -11,35 +12,46 @@ import { AddBunnyModal } from './add-bunny-modal/add-bunny-modal';
   templateUrl: './home-page.html',
   styleUrl: './home-page.scss'
 })
-export class HomePage implements OnInit {
-  bunnies: Bunny[] = [];
+export class HomePage implements OnInit, OnDestroy {
+  bunnies$: Observable<Bunny[]>;
   loading = true;
   error = '';
   showAddModal = false;
+  private subscription = new Subscription();
 
-  constructor(private firebaseService: FirebaseService) {}
-
-  async ngOnInit(): Promise<void> {
-    await this.loadBunnies();
+  constructor(private firebaseService: FirebaseService) {
+    this.bunnies$ = this.firebaseService.getBunnies();
   }
 
-  async loadBunnies(): Promise<void> {
-    try {
-      this.loading = true;
-      this.error = '';
-      this.bunnies = await this.firebaseService.getBunnies();
-    } catch (error) {
-      console.error('Error loading bunnies:', error);
-      this.error = 'Failed to load bunnies';
-    } finally {
-      this.loading = false;
-    }
+  ngOnInit(): void {
+    // Subscribe to bunnies for loading state management
+    this.subscription.add(
+      this.bunnies$.subscribe({
+        next: () => {
+          this.loading = false;
+          this.error = '';
+        },
+        error: (error) => {
+          console.error('Error loading bunnies:', error);
+          this.error = 'Failed to load bunnies';
+          this.loading = false;
+        }
+      })
+    );
   }
 
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
+  }
+
+  // Calculate average happiness from observable
   get averageHappiness(): number {
-    if (this.bunnies.length === 0) return 0;
-    const total = this.bunnies.reduce((sum, bunny) => sum + bunny.happiness, 0);
-    return Math.round((total / this.bunnies.length) * 10); // Convert to percentage
+    let bunnies: Bunny[] = [];
+    this.bunnies$.subscribe(b => bunnies = b).unsubscribe();
+
+    if (bunnies.length === 0) return 0;
+    const total = bunnies.reduce((sum, bunny) => sum + bunny.happiness, 0);
+    return Math.round((total / bunnies.length) * 10); // Convert to percentage
   }
 
   openAddModal(): void {
@@ -51,7 +63,8 @@ export class HomePage implements OnInit {
   }
 
   onBunnyAdded(): void {
-    this.loadBunnies();
+    // No need to reload - real-time updates will handle this
+    console.log('Bunny added successfully!');
   }
 
   getHappinessColor(happiness: number): string {

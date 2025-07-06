@@ -1,16 +1,6 @@
-import { Injectable } from '@angular/core';
-import { initializeApp } from 'firebase/app';
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  getDocs,
-  doc,
-  updateDoc,
-  deleteDoc,
-  getDoc,
-  setDoc
-} from 'firebase/firestore';
+import { Injectable, inject } from '@angular/core';
+import { Firestore, collection, collectionData, doc, docData, addDoc, updateDoc, deleteDoc, setDoc } from '@angular/fire/firestore';
+import { Observable, from, map, switchMap, of } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export interface Bunny {
@@ -48,8 +38,7 @@ export interface BaseConfiguration {
   providedIn: 'root'
 })
 export class FirebaseService {
-  private app = initializeApp(environment.firebase);
-  private db = getFirestore(this.app);
+  private firestore = inject(Firestore);
 
   constructor() {
     this.initializeBaseConfiguration();
@@ -58,8 +47,10 @@ export class FirebaseService {
   // Initialize base configuration if it doesn't exist
   private async initializeBaseConfiguration(): Promise<void> {
     try {
-      const configDoc = await getDoc(doc(this.db, 'configuration', 'base'));
-      if (!configDoc.exists()) {
+      const configDoc = doc(this.firestore, 'configuration', 'base');
+      const configData = await docData(configDoc).toPromise();
+
+      if (!configData) {
         const defaultConfig: Omit<BaseConfiguration, 'id'> = {
           rewardScore: 1,
           playScore: 2,
@@ -73,93 +64,117 @@ export class FirebaseService {
             grooming: 1
           }
         };
-        await setDoc(doc(this.db, 'configuration', 'base'), defaultConfig);
+        await setDoc(configDoc, defaultConfig);
       }
     } catch (error) {
       console.error('Error initializing base configuration:', error);
     }
   }
 
-  // Get base configuration
-  async getBaseConfiguration(): Promise<BaseConfiguration> {
-    const configDoc = await getDoc(doc(this.db, 'configuration', 'base'));
-    if (configDoc.exists()) {
-      return { id: configDoc.id, ...configDoc.data() } as BaseConfiguration;
-    }
-    throw new Error('Base configuration not found');
+  // Get base configuration (Observable-based)
+  getBaseConfiguration(): Observable<BaseConfiguration> {
+    const configDoc = doc(this.firestore, 'configuration', 'base');
+    return docData(configDoc).pipe(
+      map(config => ({ id: 'base', ...config } as BaseConfiguration))
+    );
   }
 
   // Update base configuration
-  async updateBaseConfiguration(config: Partial<BaseConfiguration>): Promise<void> {
-    const configRef = doc(this.db, 'configuration', 'base');
-    await updateDoc(configRef, config);
+  updateBaseConfiguration(config: Partial<BaseConfiguration>): Observable<void> {
+    const configRef = doc(this.firestore, 'configuration', 'base');
+    return from(updateDoc(configRef, config));
   }
 
-  // Bunny data methods
-  async addBunny(bunny: Omit<Bunny, 'id'>): Promise<string> {
-    const docRef = await addDoc(collection(this.db, 'bunnies'), bunny);
-    return docRef.id;
+  // Bunny data methods with real-time updates
+  getBunnies(): Observable<Bunny[]> {
+    const bunniesCollection = collection(this.firestore, 'bunnies');
+    return collectionData(bunniesCollection, { idField: 'id' }).pipe(
+      map(bunnies => bunnies as Bunny[])
+    );
   }
 
-  async getBunnies(): Promise<Bunny[]> {
-    const querySnapshot = await getDocs(collection(this.db, 'bunnies'));
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as Bunny));
+  // Add bunny
+  addBunny(bunny: Omit<Bunny, 'id'>): Observable<string> {
+    const bunniesCollection = collection(this.firestore, 'bunnies');
+    return from(addDoc(bunniesCollection, bunny)).pipe(
+      map(docRef => docRef.id)
+    );
   }
 
-  async updateBunny(id: string, updates: Partial<Bunny>): Promise<void> {
-    const bunnyRef = doc(this.db, 'bunnies', id);
-    await updateDoc(bunnyRef, updates);
+  // Update bunny
+  updateBunny(id: string, updates: Partial<Bunny>): Observable<void> {
+    const bunnyRef = doc(this.firestore, 'bunnies', id);
+    return from(updateDoc(bunnyRef, updates));
   }
 
-  async deleteBunny(id: string): Promise<void> {
-    const bunnyRef = doc(this.db, 'bunnies', id);
-    await deleteDoc(bunnyRef);
+  // Delete bunny
+  deleteBunny(id: string): Observable<void> {
+    const bunnyRef = doc(this.firestore, 'bunnies', id);
+    return from(deleteDoc(bunnyRef));
   }
 
-  async updateBunnyHappiness(id: string, happiness: number): Promise<void> {
-    await this.updateBunny(id, {
+  // Update bunny happiness
+  updateBunnyHappiness(id: string, happiness: number): Observable<void> {
+    return this.updateBunny(id, {
       happiness,
       lastFed: new Date().toISOString()
     });
   }
 
   // Activity methods with scoring
-  async feedBunny(bunnyId: string, mealType: 'lettuce' | 'carrot'): Promise<void> {
-    const config = await this.getBaseConfiguration();
-    const bunny = (await this.getBunnies()).find(b => b.id === bunnyId);
-
-    if (bunny) {
-      const happinessIncrease = config.meals[mealType];
-      const newHappiness = Math.min(10, bunny.happiness + happinessIncrease);
-
-      await this.updateBunny(bunnyId, {
-        happiness: newHappiness,
-        lastFed: new Date().toISOString()
-      });
-    }
+  feedBunny(bunnyId: string, mealType: 'lettuce' | 'carrot'): Observable<void> {
+    return this.getBaseConfiguration().pipe(
+      switchMap(config =>
+        this.getBunnies().pipe(
+          map(bunnies => bunnies.find(b => b.id === bunnyId)),
+          switchMap(bunny => {
+            if (bunny) {
+              const happinessIncrease = config.meals[mealType];
+              const newHappiness = Math.min(10, bunny.happiness + happinessIncrease);
+              return this.updateBunny(bunnyId, {
+                happiness: newHappiness,
+                lastFed: new Date().toISOString()
+              });
+            }
+            return of(void 0);
+          })
+        )
+      )
+    );
   }
 
-  async playWithBunny(bunnyId: string): Promise<void> {
-    const config = await this.getBaseConfiguration();
-    const bunny = (await this.getBunnies()).find(b => b.id === bunnyId);
-
-    if (bunny) {
-      const newHappiness = Math.min(10, bunny.happiness + config.playScore);
-      await this.updateBunny(bunnyId, { happiness: newHappiness });
-    }
+  playWithBunny(bunnyId: string): Observable<void> {
+    return this.getBaseConfiguration().pipe(
+      switchMap(config =>
+        this.getBunnies().pipe(
+          map(bunnies => bunnies.find(b => b.id === bunnyId)),
+          switchMap(bunny => {
+            if (bunny) {
+              const newHappiness = Math.min(10, bunny.happiness + config.playScore);
+              return this.updateBunny(bunnyId, { happiness: newHappiness });
+            }
+            return of(void 0);
+          })
+        )
+      )
+    );
   }
 
-  async performActivity(bunnyId: string, activityType: keyof BaseConfiguration['activities']): Promise<void> {
-    const config = await this.getBaseConfiguration();
-    const bunny = (await this.getBunnies()).find(b => b.id === bunnyId);
-
-    if (bunny) {
-      const happinessIncrease = config.activities[activityType];
-      const newHappiness = Math.min(10, bunny.happiness + happinessIncrease);
-      await this.updateBunny(bunnyId, { happiness: newHappiness });
-    }
+  performActivity(bunnyId: string, activityType: keyof BaseConfiguration['activities']): Observable<void> {
+    return this.getBaseConfiguration().pipe(
+      switchMap(config =>
+        this.getBunnies().pipe(
+          map(bunnies => bunnies.find(b => b.id === bunnyId)),
+          switchMap(bunny => {
+            if (bunny) {
+              const happinessIncrease = config.activities[activityType];
+              const newHappiness = Math.min(10, bunny.happiness + happinessIncrease);
+              return this.updateBunny(bunnyId, { happiness: newHappiness });
+            }
+            return of(void 0);
+          })
+        )
+      )
+    );
   }
 }
