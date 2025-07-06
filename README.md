@@ -52,6 +52,23 @@ Visit [http://localhost:4200](http://localhost:4200) in your browser.
 ng build
 ```
 
+## Project Structure
+```
+uvbunny/
+├── src/
+│   ├── app/
+│   ├── styles.scss
+│   └── main.ts
+├── angular.json
+├── package.json
+├── README.md
+├── README-AI.md
+├── .git/
+├── .vscode/
+├── public/
+└── ...
+```
+
 ## Progress
 - [x] Angular project initialized with SCSS and routing
 - [x] Bootstrap installed and configured
