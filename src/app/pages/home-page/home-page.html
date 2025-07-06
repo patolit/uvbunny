@@ -18,7 +18,7 @@
   </div>
 
   <!-- Empty State - No Bunnies -->
-  <div *ngIf="!loading && !error && bunnies.length === 0" class="empty-state">
+  <div *ngIf="!loading && !error && (bunnies$ | async)?.length === 0" class="empty-state">
     <div class="text-center py-5">
       <div class="empty-state-icon mb-4">
         <i class="bi bi-heart text-muted" style="font-size: 4rem;"></i>
@@ -35,7 +35,7 @@
   </div>
 
   <!-- Dashboard - Bunnies Exist -->
-  <div *ngIf="!loading && !error && bunnies.length > 0">
+  <div *ngIf="!loading && !error && (bunnies$ | async)?.length > 0">
     <!-- Overall Happiness Component -->
     <div class="overall-happiness mb-4">
       <div class="card">
@@ -53,9 +53,9 @@
               <div class="happiness-bar-container flex-grow-1 mx-3">
                 <div class="happiness-bar">
                   <div class="happiness-indicator"
-                       [style.left.%]="averageHappiness"
+                       [style.left.%]="averageHappiness$ | async"
                        [style.background-color]="getOverallHappinessColor()">
-                    <span class="happiness-value">{{ averageHappiness }}%</span>
+                    <span class="happiness-value">{{ averageHappiness$ | async }}%</span>
                   </div>
                 </div>
               </div>
@@ -72,7 +72,7 @@
         <!-- Bunnies Status Graph -->
     <div class="bunnies-status">
       <app-bunny-chart
-        [bunnies]="bunnies"
+        [bunnies]="bunnies$ | async"
         (addBunny)="openAddModal()">
       </app-bunny-chart>
     </div>

@@ -179,3 +179,120 @@ npm install firebase
 **Last Updated**: After directory structure cleanup and documentation updates
 **Ready For**: Feature development, component creation, and Firebase integration
 **Next Steps**: Create page components, set up routing, integrate Firebase
+
+# UVbunny - Angular 18 App
+
+## Recent Updates
+
+### AngularFire Migration (Latest)
+- **Migrated from Firebase SDK to AngularFire** for better Angular integration
+- **Real-time updates** for bunny data using Observable streams
+- **Improved performance** with lazy loading of Firebase modules
+- **Better error handling** with AngularFire-specific patterns
+- **Enhanced type safety** with AngularFire's TypeScript support
+
+#### Migration Benefits:
+✅ **Real-time Data**: Bunny list updates automatically when data changes  
+✅ **Observable-based**: Uses RxJS streams instead of async/await  
+✅ **Dependency Injection**: Native Angular patterns for Firebase services  
+✅ **Better Performance**: Lazy loading and optimized Firebase usage  
+✅ **Future-proof**: Official Angular + Firebase integration  
+
+#### Technical Changes:
+- Updated `app.config.ts` with AngularFire providers
+- Refactored `FirebaseService` to use AngularFire's Observable API
+- Updated all components to use Observable subscriptions
+- Implemented proper subscription management with `OnDestroy`
+- Added real-time updates for bunny data
+
+---
+
+## Future Improvement Recommendations
+
+### 🔄 **Configuration Real-time Updates**
+- **Current**: Configuration page loads data on-demand
+- **Improvement**: Implement real-time updates for configuration changes
+- **Benefit**: Multiple users can see configuration changes instantly
+- **Implementation**: Use `docData()` Observable for configuration document
+
+### 🧪 **Unit Testing**
+- **Current**: No unit tests for Firebase service
+- **Improvement**: Add comprehensive unit tests for AngularFire service
+- **Benefit**: Ensure reliability and easier maintenance
+- **Implementation**: Use Angular testing utilities and Firebase emulators
+
+### 🛡️ **Advanced Error Handling**
+- **Current**: Basic error handling with console logs
+- **Improvement**: Implement retry mechanisms, offline support, and user-friendly error messages
+- **Benefit**: Better user experience and app reliability
+- **Implementation**: Use RxJS error handling operators and offline persistence
+
+### ⚡ **Performance Optimizations**
+- **Current**: Good performance with AngularFire
+- **Improvement**: Add pagination for large bunny lists, implement caching strategies
+- **Benefit**: Better performance with large datasets
+- **Implementation**: Use Firestore pagination and AngularFire caching
+
+### 🔐 **Authentication Integration**
+- **Current**: No user authentication
+- **Improvement**: Add Firebase Authentication for user management
+- **Benefit**: Multi-user support and data isolation
+- **Implementation**: Use AngularFire Auth with route guards
+
+---
+
+## Previous Updates
+
+### Component Refactoring
+- **BunnyChart Component**: Extracted chart functionality into separate component
+- **AddBunnyModal Component**: Separated modal logic for better code organization
+- **Improved Maintainability**: Each component has single responsibility
+
+### Firebase Integration
+- **Firestore Database**: Cloud-based bunny data storage
+- **Configuration Management**: Scoring system for meals and activities
+- **Real-time Updates**: Automatic data synchronization
+
+### UI/UX Improvements
+- **Bootstrap Integration**: Modern, responsive design
+- **Bootstrap Icons**: Consistent iconography throughout the app
+- **Color Picker**: Visual color selection for bunnies
+- **Happiness Meter**: Visual representation of overall bunny happiness
+
+---
+
+## Tech Stack
+
+- **Frontend**: Angular 18, TypeScript, Bootstrap 5
+- **Backend**: Firebase Firestore (via AngularFire)
+- **Styling**: Bootstrap Icons, SCSS
+- **Testing**: Jest (planned)
+- **Build**: Angular CLI
+
+---
+
+## Getting Started
+
+1. Install dependencies: `npm install`
+2. Configure Firebase in `src/environments/environment.ts`
+3. Start development server: `ng serve`
+4. Open browser to `http://localhost:4200`
+
+---
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── pages/
+│   │   ├── home-page/
+│   │   │   ├── bunny-chart/
+│   │   │   └── add-bunny-modal/
+│   │   └── configuration-page/
+│   └── services/
+│       └── firebase.ts (AngularFire service)
+├── environments/
+│   └── environment.ts (Firebase config)
+└── styles.scss
+```

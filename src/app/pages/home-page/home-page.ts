@@ -5,6 +5,7 @@ import { FirebaseService, Bunny } from '../../services/firebase';
 import { BunnyChart } from './bunny-chart/bunny-chart';
 import { AddBunnyModal } from './add-bunny-modal/add-bunny-modal';
 import { Observable, Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-home-page',
@@ -44,7 +45,7 @@ export class HomePage implements OnInit, OnDestroy {
     this.subscription.unsubscribe();
   }
 
-  // Calculate average happiness from observable
+    // Calculate average happiness from observable
   get averageHappiness(): number {
     let bunnies: Bunny[] = [];
     this.bunnies$.subscribe(b => bunnies = b).unsubscribe();
@@ -52,6 +53,17 @@ export class HomePage implements OnInit, OnDestroy {
     if (bunnies.length === 0) return 0;
     const total = bunnies.reduce((sum, bunny) => sum + bunny.happiness, 0);
     return Math.round((total / bunnies.length) * 10); // Convert to percentage
+  }
+
+  // Observable for average happiness
+  get averageHappiness$(): Observable<number> {
+    return this.bunnies$.pipe(
+      map((bunnies: Bunny[]) => {
+        if (bunnies.length === 0) return 0;
+        const total = bunnies.reduce((sum: number, bunny: Bunny) => sum + bunny.happiness, 0);
+        return Math.round((total / bunnies.length) * 10); // Convert to percentage
+      })
+    );
   }
 
   openAddModal(): void {
@@ -75,6 +87,13 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   getOverallHappinessColor(): string {
-    return this.getHappinessColor(this.averageHappiness);
+    let bunnies: Bunny[] = [];
+    this.bunnies$.subscribe(b => bunnies = b).unsubscribe();
+
+    if (bunnies.length === 0) return '#dc3545'; // Red for no bunnies
+
+    const total = bunnies.reduce((sum, bunny) => sum + bunny.happiness, 0);
+    const average = Math.round((total / bunnies.length) * 10);
+    return this.getHappinessColor(average);
   }
 }

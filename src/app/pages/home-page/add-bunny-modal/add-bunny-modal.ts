@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FirebaseService, Bunny } from '../../../services/firebase';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-add-bunny-modal',
@@ -32,6 +33,7 @@ export class AddBunnyModal {
 
   loading = false;
   error = '';
+  private subscription = new Subscription();
 
   constructor(private firebaseService: FirebaseService) {}
 
@@ -53,36 +55,39 @@ export class AddBunnyModal {
     this.error = '';
   }
 
-  async addBunny(): Promise<void> {
+  addBunny(): void {
     if (!this.newBunny.name.trim()) {
       return; // Don't add if name is empty
     }
 
-    try {
-      this.loading = true;
-      this.error = '';
+    this.loading = true;
+    this.error = '';
 
-      const bunnyData: Omit<Bunny, 'id'> = {
-        name: this.newBunny.name.trim(),
-        breed: 'Unknown', // Default breed
-        birthDate: new Date().toISOString().split('T')[0], // Today's date
-        happiness: this.newBunny.happiness,
-        lastFed: new Date().toISOString(),
-        notes: `Color: ${this.newBunny.color}`
-      };
+    const bunnyData: Omit<Bunny, 'id'> = {
+      name: this.newBunny.name.trim(),
+      breed: 'Unknown', // Default breed
+      birthDate: new Date().toISOString().split('T')[0], // Today's date
+      happiness: this.newBunny.happiness,
+      lastFed: new Date().toISOString(),
+      notes: `Color: ${this.newBunny.color}`
+    };
 
-      await this.firebaseService.addBunny(bunnyData);
-
-      // Close modal and emit event
-      this.closeModal();
-      this.bunnyAdded.emit();
-
-      console.log('Bunny added successfully!');
-    } catch (error) {
-      console.error('Error adding bunny:', error);
-      this.error = 'Failed to add bunny';
-    } finally {
-      this.loading = false;
-    }
+    this.subscription.add(
+      this.firebaseService.addBunny(bunnyData).subscribe({
+        next: () => {
+          // Close modal and emit event
+          this.closeModal();
+          this.bunnyAdded.emit();
+          console.log('Bunny added successfully!');
+        },
+        error: (error) => {
+          console.error('Error adding bunny:', error);
+          this.error = 'Failed to add bunny';
+        },
+        complete: () => {
+          this.loading = false;
+        }
+      })
+    );
   }
 }

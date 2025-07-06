@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FirebaseService, BaseConfiguration } from '../../services/firebase';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-configuration-page',
@@ -9,7 +10,7 @@ import { FirebaseService, BaseConfiguration } from '../../services/firebase';
   templateUrl: './configuration-page.html',
   styleUrl: './configuration-page.scss'
 })
-export class ConfigurationPage implements OnInit {
+export class ConfigurationPage implements OnInit, OnDestroy {
   configuration: BaseConfiguration | null = null;
   loading = true;
   saving = false;
@@ -23,11 +24,18 @@ export class ConfigurationPage implements OnInit {
   playScore = 2;
   rewardScore = 1;
 
+  private subscription = new Subscription();
+
   constructor(private firebaseService: FirebaseService) {}
 
-  async ngOnInit(): Promise<void> {
-    await this.checkFirebaseConnection();
-    await this.loadConfiguration();
+  ngOnInit(): Promise<void> {
+    this.checkFirebaseConnection();
+    this.loadConfiguration();
+    return Promise.resolve();
+  }
+
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
   }
 
   async checkFirebaseConnection(): Promise<void> {
@@ -35,10 +43,19 @@ export class ConfigurationPage implements OnInit {
       this.firebaseStatus = 'Testing connection...';
 
       // Try to get the base configuration to test the connection
-      await this.firebaseService.getBaseConfiguration();
-
-      this.firebaseConnected = true;
-      this.firebaseStatus = 'Connected to Firebase';
+      this.subscription.add(
+        this.firebaseService.getBaseConfiguration().subscribe({
+          next: () => {
+            this.firebaseConnected = true;
+            this.firebaseStatus = 'Connected to Firebase';
+          },
+          error: (error) => {
+            console.error('Firebase connection error:', error);
+            this.firebaseConnected = false;
+            this.firebaseStatus = 'Connection failed';
+          }
+        })
+      );
     } catch (error) {
       console.error('Firebase connection error:', error);
       this.firebaseConnected = false;
@@ -46,25 +63,36 @@ export class ConfigurationPage implements OnInit {
     }
   }
 
-  async loadConfiguration(): Promise<void> {
+  loadConfiguration(): void {
     try {
       this.loading = true;
-      this.configuration = await this.firebaseService.getBaseConfiguration();
+      this.subscription.add(
+        this.firebaseService.getBaseConfiguration().subscribe({
+          next: (config) => {
+            this.configuration = config;
 
-      // Update form values
-      this.lettuceScore = this.configuration.meals.lettuce;
-      this.carrotScore = this.configuration.meals.carrot;
-      this.playScore = this.configuration.playScore;
-      this.rewardScore = this.configuration.rewardScore;
+            // Update form values
+            this.lettuceScore = this.configuration.meals.lettuce;
+            this.carrotScore = this.configuration.meals.carrot;
+            this.playScore = this.configuration.playScore;
+            this.rewardScore = this.configuration.rewardScore;
+            this.loading = false;
+          },
+          error: (error) => {
+            console.error('Error loading configuration:', error);
+            this.error = 'Failed to load configuration';
+            this.loading = false;
+          }
+        })
+      );
     } catch (error) {
       console.error('Error loading configuration:', error);
       this.error = 'Failed to load configuration';
-    } finally {
       this.loading = false;
     }
   }
 
-  async saveConfiguration(): Promise<void> {
+  saveConfiguration(): void {
     try {
       this.saving = true;
       this.error = '';
@@ -78,22 +106,30 @@ export class ConfigurationPage implements OnInit {
         rewardScore: this.rewardScore
       };
 
-      await this.firebaseService.updateBaseConfiguration(updatedConfig);
-
-      // Reload to get the updated configuration
-      await this.loadConfiguration();
-
-      // Show success message (you could add a toast notification here)
-      console.log('Configuration saved successfully!');
+      this.subscription.add(
+        this.firebaseService.updateBaseConfiguration(updatedConfig).subscribe({
+          next: () => {
+            // Reload to get the updated configuration
+            this.loadConfiguration();
+            console.log('Configuration saved successfully!');
+          },
+          error: (error) => {
+            console.error('Error saving configuration:', error);
+            this.error = 'Failed to save configuration';
+          },
+          complete: () => {
+            this.saving = false;
+          }
+        })
+      );
     } catch (error) {
       console.error('Error saving configuration:', error);
       this.error = 'Failed to save configuration';
-    } finally {
       this.saving = false;
     }
   }
 
-  async resetToDefaults(): Promise<void> {
+  resetToDefaults(): void {
     try {
       this.saving = true;
       this.error = '';
@@ -112,22 +148,31 @@ export class ConfigurationPage implements OnInit {
         }
       };
 
-      await this.firebaseService.updateBaseConfiguration(defaultConfig);
+      this.subscription.add(
+        this.firebaseService.updateBaseConfiguration(defaultConfig).subscribe({
+          next: () => {
+            // Update form values
+            this.lettuceScore = defaultConfig.meals!.lettuce;
+            this.carrotScore = defaultConfig.meals!.carrot;
+            this.playScore = defaultConfig.playScore!;
+            this.rewardScore = defaultConfig.rewardScore!;
 
-      // Update form values
-      this.lettuceScore = defaultConfig.meals!.lettuce;
-      this.carrotScore = defaultConfig.meals!.carrot;
-      this.playScore = defaultConfig.playScore!;
-      this.rewardScore = defaultConfig.rewardScore!;
-
-      // Reload configuration
-      await this.loadConfiguration();
-
-      console.log('Configuration reset to defaults!');
+            // Reload configuration
+            this.loadConfiguration();
+            console.log('Configuration reset to defaults!');
+          },
+          error: (error) => {
+            console.error('Error resetting configuration:', error);
+            this.error = 'Failed to reset configuration';
+          },
+          complete: () => {
+            this.saving = false;
+          }
+        })
+      );
     } catch (error) {
       console.error('Error resetting configuration:', error);
       this.error = 'Failed to reset configuration';
-    } finally {
       this.saving = false;
     }
   }
