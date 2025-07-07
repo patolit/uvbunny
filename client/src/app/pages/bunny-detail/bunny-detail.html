@@ -144,4 +144,13 @@
       </div>
     </div>
   </div>
+
+  <!-- Play Partner Modal -->
+  <app-play-partner-modal
+    *ngIf="showPlayModal && currentBunny"
+    [currentBunnyId]="currentBunny.id!"
+    [currentBunnyName]="currentBunny.name"
+    (partnerSelected)="onPlayPartnerSelected($event)"
+    (modalClosed)="onPlayModalClosed()">
+  </app-play-partner-modal>
 </div>

@@ -5,10 +5,11 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FirebaseService, Bunny } from '../../services/firebase';
 import { Observable, Subscription, switchMap, of, take } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { PlayPartnerModal } from './play-partner-modal/play-partner-modal';
 
 @Component({
   selector: 'app-bunny-detail',
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, PlayPartnerModal],
   templateUrl: './bunny-detail.html',
   styleUrl: './bunny-detail.scss'
 })
@@ -16,6 +17,8 @@ export class BunnyDetail implements OnInit, OnDestroy {
   bunny$: Observable<Bunny | null>;
   loading = true;
   error = '';
+  showPlayModal = false;
+  currentBunny: Bunny | null = null;
   private subscription = new Subscription();
 
   constructor(
@@ -41,6 +44,7 @@ export class BunnyDetail implements OnInit, OnDestroy {
       this.bunny$.subscribe({
         next: (bunny) => {
           this.loading = false;
+          this.currentBunny = bunny;
           if (!bunny) {
             this.error = 'Bunny not found';
           }
@@ -91,12 +95,25 @@ export class BunnyDetail implements OnInit, OnDestroy {
     if (event) {
       event.stopPropagation();
     }
-    this.firebaseService.playWithBunny(bunnyId)
-      .pipe(take(1))
-      .subscribe({
-        next: () => console.log('Played with bunny'),
-        error: (error) => console.error('Error playing with bunny:', error)
-      });
+    this.showPlayModal = true;
+  }
+
+  onPlayModalClosed(): void {
+    this.showPlayModal = false;
+  }
+
+  onPlayPartnerSelected(partnerId: string): void {
+    if (this.currentBunny) {
+      this.firebaseService.playWithBunny(this.currentBunny.id!, partnerId)
+        .pipe(take(1))
+        .subscribe({
+          next: () => {
+            console.log('Played with bunny partner');
+            this.showPlayModal = false;
+          },
+          error: (error) => console.error('Error playing with bunny:', error)
+        });
+    }
   }
 
   onPetBunny(bunnyId: string, event?: Event): void {
