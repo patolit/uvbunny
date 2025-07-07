@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { FirebaseService, Bunny } from '../../services/firebase';
 import { Observable, Subscription, BehaviorSubject, combineLatest } from 'rxjs';
-import { map, startWith } from 'rxjs/operators';
+import { map, startWith, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 interface SortConfig {
   column: keyof Bunny;
@@ -69,7 +69,11 @@ export class DetailsPage implements OnInit, OnDestroy {
   private setupFilteredBunnies(): void {
     this.filteredBunnies$ = combineLatest([
       this.bunnies$,
-      this.searchSubject.pipe(startWith(''))
+      this.searchSubject.pipe(
+        startWith(''),
+        debounceTime(300),
+        distinctUntilChanged()
+      )
     ]).pipe(
       map(([bunnies, searchTerm]) => {
         let filtered = bunnies;
@@ -93,6 +97,11 @@ export class DetailsPage implements OnInit, OnDestroy {
 
   onSearchChange(): void {
     this.searchSubject.next(this.searchTerm);
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.searchSubject.next('');
   }
 
   onSort(column: keyof Bunny): void {
@@ -140,7 +149,7 @@ export class DetailsPage implements OnInit, OnDestroy {
 
   onBunnyClick(bunny: Bunny): void {
     if (bunny.id) {
-      this.router.navigate(['/details-page', bunny.id]);
+      this.router.navigate(['/details', bunny.id]);
     }
   }
 

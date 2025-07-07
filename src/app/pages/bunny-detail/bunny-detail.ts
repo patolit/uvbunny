@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FirebaseService, Bunny } from '../../services/firebase';
-import { Observable, Subscription, switchMap, of } from 'rxjs';
+import { Observable, Subscription, switchMap, of, take } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 @Component({
@@ -62,49 +62,65 @@ export class BunnyDetail implements OnInit, OnDestroy {
     this.router.navigate(['/details']);
   }
 
-  onFeedLettuce(bunnyId: string): void {
-    this.subscription.add(
-      this.firebaseService.feedBunny(bunnyId, 'lettuce').subscribe({
+  onFeedLettuce(bunnyId: string, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    console.log('Button clicked: Feeding lettuce to bunny:', bunnyId);
+    this.firebaseService.feedBunny(bunnyId, 'lettuce')
+      .pipe(take(1))
+      .subscribe({
         next: () => console.log('Fed lettuce to bunny'),
         error: (error) => console.error('Error feeding bunny:', error)
-      })
-    );
+      });
   }
 
-  onFeedCarrot(bunnyId: string): void {
-    this.subscription.add(
-      this.firebaseService.feedBunny(bunnyId, 'carrot').subscribe({
+  onFeedCarrot(bunnyId: string, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.firebaseService.feedBunny(bunnyId, 'carrot')
+      .pipe(take(1))
+      .subscribe({
         next: () => console.log('Fed carrot to bunny'),
         error: (error) => console.error('Error feeding bunny:', error)
-      })
-    );
+      });
   }
 
-  onPlayWithBunny(bunnyId: string): void {
-    this.subscription.add(
-      this.firebaseService.playWithBunny(bunnyId).subscribe({
+  onPlayWithBunny(bunnyId: string, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.firebaseService.playWithBunny(bunnyId)
+      .pipe(take(1))
+      .subscribe({
         next: () => console.log('Played with bunny'),
         error: (error) => console.error('Error playing with bunny:', error)
-      })
-    );
+      });
   }
 
-  onPetBunny(bunnyId: string): void {
-    this.subscription.add(
-      this.firebaseService.performActivity(bunnyId, 'petting').subscribe({
+  onPetBunny(bunnyId: string, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.firebaseService.performActivity(bunnyId, 'petting')
+      .pipe(take(1))
+      .subscribe({
         next: () => console.log('Petted bunny'),
         error: (error) => console.error('Error petting bunny:', error)
-      })
-    );
+      });
   }
 
-  onGroomBunny(bunnyId: string): void {
-    this.subscription.add(
-      this.firebaseService.performActivity(bunnyId, 'grooming').subscribe({
+  onGroomBunny(bunnyId: string, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.firebaseService.performActivity(bunnyId, 'grooming')
+      .pipe(take(1))
+      .subscribe({
         next: () => console.log('Groomed bunny'),
         error: (error) => console.error('Error grooming bunny:', error)
-      })
-    );
+      });
   }
 
   getHappinessColor(happiness: number): string {

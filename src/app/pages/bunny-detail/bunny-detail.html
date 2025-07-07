@@ -103,14 +103,14 @@
                     <div class="d-grid gap-2">
                       <button
                         class="btn btn-success"
-                        (click)="onFeedLettuce(bunny.id!)"
+                        (click)="onFeedLettuce(bunny.id!, $event)"
                         [disabled]="!bunny.id">
                         <i class="bi bi-leaf me-2"></i>
                         Feed Lettuce
                       </button>
                       <button
                         class="btn btn-warning"
-                        (click)="onFeedCarrot(bunny.id!)"
+                        (click)="onFeedCarrot(bunny.id!, $event)"
                         [disabled]="!bunny.id">
                         <i class="bi bi-carrot me-2"></i>
                         Feed Carrot
@@ -129,21 +129,21 @@
                     <div class="d-grid gap-2">
                       <button
                         class="btn btn-primary"
-                        (click)="onPlayWithBunny(bunny.id!)"
+                        (click)="onPlayWithBunny(bunny.id!, $event)"
                         [disabled]="!bunny.id">
                         <i class="bi bi-play-circle me-2"></i>
                         Play
                       </button>
                       <button
                         class="btn btn-info"
-                        (click)="onPetBunny(bunny.id!)"
+                        (click)="onPetBunny(bunny.id!, $event)"
                         [disabled]="!bunny.id">
                         <i class="bi bi-hand-index me-2"></i>
                         Pet
                       </button>
                       <button
                         class="btn btn-secondary"
-                        (click)="onGroomBunny(bunny.id!)"
+                        (click)="onGroomBunny(bunny.id!, $event)"
                         [disabled]="!bunny.id">
                         <i class="bi bi-scissors me-2"></i>
                         Groom

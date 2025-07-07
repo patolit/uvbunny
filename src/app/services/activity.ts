@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, switchMap, map, of } from 'rxjs';
+import { Observable, switchMap, map, of, take } from 'rxjs';
 import { ConfigurationService } from './configuration';
 import { BunnyService } from './bunny';
 import { BaseConfiguration } from './types';
@@ -14,8 +14,10 @@ export class ActivityService {
   // Feed bunny with specific meal
   feedBunny(bunnyId: string, mealType: 'lettuce' | 'carrot'): Observable<void> {
     return this.configurationService.getBaseConfiguration().pipe(
+      take(1),
       switchMap(config =>
         this.bunnyService.getBunnies().pipe(
+          take(1),
           map(bunnies => bunnies.find(b => b.id === bunnyId)),
           switchMap(bunny => {
             if (bunny) {
@@ -35,8 +37,10 @@ export class ActivityService {
   // Play with bunny
   playWithBunny(bunnyId: string): Observable<void> {
     return this.configurationService.getBaseConfiguration().pipe(
+      take(1),
       switchMap(config =>
         this.bunnyService.getBunnies().pipe(
+          take(1),
           map(bunnies => bunnies.find(b => b.id === bunnyId)),
           switchMap(bunny => {
             if (bunny) {
@@ -53,8 +57,10 @@ export class ActivityService {
   // Perform any activity with bunny
   performActivity(bunnyId: string, activityType: keyof BaseConfiguration['activities']): Observable<void> {
     return this.configurationService.getBaseConfiguration().pipe(
+      take(1),
       switchMap(config =>
         this.bunnyService.getBunnies().pipe(
+          take(1),
           map(bunnies => bunnies.find(b => b.id === bunnyId)),
           switchMap(bunny => {
             if (bunny) {
