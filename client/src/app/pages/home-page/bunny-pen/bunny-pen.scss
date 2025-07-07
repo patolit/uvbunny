@@ -3,4 +3,150 @@
   .pen-placeholder {
     opacity: 0.5;
   }
+
+  .pen-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .bunny-pen-svg {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  }
+
+  .pen-border {
+    transition: stroke-width 0.3s ease;
+
+    &:hover {
+      stroke-width: 4;
+    }
+  }
+
+  .bunny-group {
+    cursor: pointer;
+    transition: transform 0.3s ease, filter 0.3s ease;
+
+    &:hover {
+      transform: scale(1.1);
+      filter: brightness(1.1);
+    }
+  }
+
+  .bunny-body {
+    transition: fill 0.3s ease;
+  }
+
+  .bunny-head {
+    transition: fill 0.3s ease;
+  }
+
+  .bunny-ear {
+    transition: fill 0.3s ease;
+
+    &:hover {
+      fill: #FFB6C1;
+    }
+  }
+
+  .bunny-eye {
+    transition: r 0.2s ease;
+
+    .bunny-group:hover & {
+      r: 2;
+    }
+  }
+
+  .bunny-nose {
+    transition: fill 0.3s ease;
+
+    .bunny-group:hover & {
+      fill: #FF1493;
+    }
+  }
+
+  .happiness-emoji {
+    transition: font-size 0.3s ease;
+
+    .bunny-group:hover & {
+      font-size: 20;
+    }
+  }
+
+  .bunny-name {
+    transition: font-size 0.3s ease, fill 0.3s ease;
+
+    .bunny-group:hover & {
+      font-size: 14;
+      fill: #007bff;
+    }
+  }
+
+  .tooltip {
+    pointer-events: none;
+    animation: fadeIn 0.2s ease-in-out;
+  }
+
+  .pen-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  // Responsive Design
+  @media (max-width: 768px) {
+    .bunny-pen-svg {
+      width: 100%;
+      height: auto;
+    }
+
+    .pen-controls {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .bunny-pen-svg {
+      max-width: 100%;
+    }
+  }
+}
+
+// Animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+// Hover effects for better interactivity
+.bunny-group:hover {
+  .bunny-body,
+  .bunny-head {
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  }
 }
