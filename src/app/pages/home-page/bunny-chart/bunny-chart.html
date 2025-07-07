@@ -22,7 +22,7 @@
                 <div class="chart-bars">
           <div class="chart-bar" *ngFor="let bunny of bunnies || []">
             <div class="bar"
-                 [style.height.%]="bunny.happiness"
+                 [style.height]="getHappinessPercentage(bunny.happiness) + '%'"
                  [style.background-color]="getBunnyColor(bunny.color)">
               <span class="bar-value">{{ bunny.happiness }}/10</span>
             </div>

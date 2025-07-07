@@ -28,7 +28,9 @@ export class BunnyChart {
 
   getHappinessPercentage(happiness: number): number {
     // Convert happiness from 0-10 scale to 0-100 percentage
-    return (happiness / 10) * 100;
+    const percentage = (happiness / 10) * 100;
+    console.log(`Happiness: ${happiness}, Percentage: ${percentage}%`);
+    return percentage;
   }
 
   onAddBunny(): void {
