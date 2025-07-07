@@ -9,7 +9,7 @@ import { Bunny } from '../../../services/firebase';
   styleUrl: './bunny-chart.scss'
 })
 export class BunnyChart {
-  @Input() bunnies: Bunny[] = [];
+  @Input() bunnies: Bunny[] | null = [];
   @Output() addBunny = new EventEmitter<void>();
 
   bunnyColors = [

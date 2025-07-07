@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { FirebaseService, Bunny } from '../../services/firebase';
 import { BunnyChart } from './bunny-chart/bunny-chart';
 import { AddBunnyModal } from './add-bunny-modal/add-bunny-modal';
-import { Observable, Subscription } from 'rxjs';
+import { Observable, Subscription, BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 @Component({
@@ -19,16 +19,33 @@ export class HomePage implements OnInit, OnDestroy {
   error = '';
   showAddModal = false;
   private subscription = new Subscription();
+  private bunniesSubject = new BehaviorSubject<Bunny[]>([]);
 
   constructor(private firebaseService: FirebaseService) {
-    this.bunnies$ = this.firebaseService.getBunnies();
+    this.bunnies$ = this.bunniesSubject.asObservable();
   }
 
   ngOnInit(): void {
+    this.loadBunnies();
+  }
+
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
+  }
+
+  private loadBunnies(): void {
+    this.loading = true;
+    this.error = '';
+
+    // Clear previous subscription
+    this.subscription.unsubscribe();
+    this.subscription = new Subscription();
+
     // Subscribe to bunnies for loading state management
     this.subscription.add(
-      this.bunnies$.subscribe({
-        next: () => {
+      this.firebaseService.getBunnies().subscribe({
+        next: (bunnies) => {
+          this.bunniesSubject.next(bunnies);
           this.loading = false;
           this.error = '';
         },
@@ -36,20 +53,15 @@ export class HomePage implements OnInit, OnDestroy {
           console.error('Error loading bunnies:', error);
           this.error = 'Failed to load bunnies';
           this.loading = false;
+          this.bunniesSubject.next([]);
         }
       })
     );
   }
 
-  ngOnDestroy(): void {
-    this.subscription.unsubscribe();
-  }
-
-    // Calculate average happiness from observable
+  // Calculate average happiness from observable
   get averageHappiness(): number {
-    let bunnies: Bunny[] = [];
-    this.bunnies$.subscribe(b => bunnies = b).unsubscribe();
-
+    const bunnies = this.bunniesSubject.value;
     if (bunnies.length === 0) return 0;
     const total = bunnies.reduce((sum, bunny) => sum + bunny.happiness, 0);
     return Math.round((total / bunnies.length) * 10); // Convert to percentage
@@ -77,6 +89,10 @@ export class HomePage implements OnInit, OnDestroy {
   onBunnyAdded(): void {
     // No need to reload - real-time updates will handle this
     console.log('Bunny added successfully!');
+  }
+
+  retryConnection(): void {
+    this.loadBunnies();
   }
 
   getHappinessColor(happiness: number): string {

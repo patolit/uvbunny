@@ -20,9 +20,9 @@
           <div class="y-label">0</div>
         </div>
                 <div class="chart-bars">
-          <div class="chart-bar" *ngFor="let bunny of bunnies">
+          <div class="chart-bar" *ngFor="let bunny of bunnies || []">
             <div class="bar"
-                 [style.height.%]="getHappinessPercentage(bunny.happiness)"
+                 [style.height.%]="bunny.happiness"
                  [style.background-color]="getBunnyColor(bunny.color)">
               <span class="bar-value">{{ bunny.happiness }}/10</span>
             </div>
