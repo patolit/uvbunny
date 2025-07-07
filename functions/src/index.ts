@@ -8,8 +8,8 @@
  */
 
 import {setGlobalOptions} from "firebase-functions";
-import {onRequest} from "firebase-functions/https";
-import * as logger from "firebase-functions/logger";
+import {onDocumentCreated} from "firebase-functions/v2/firestore";
+import * as admin from "firebase-admin";
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
@@ -30,3 +30,69 @@ setGlobalOptions({ maxInstances: 10 });
 //   logger.info("Hello logs!", {structuredData: true});
 //   response.send("Hello from Firebase!");
 // });
+
+admin.initializeApp();
+const db = admin.firestore();
+
+type EventStatus = "pending" | "processing" | "finished" | "error";
+
+export const processBunnyEvent = onDocumentCreated("bunnieEvent/{eventId}", async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const eventRef = snap.ref;
+    const eventData = snap.data();
+
+    // Set status to 'processing'
+    await eventRef.update({ status: "processing" as EventStatus });
+
+    try {
+      // Get bunny
+      const bunnyRef = db.collection("bunnies").doc(eventData.bunnyId);
+      const bunnyDoc = await bunnyRef.get();
+      if (!bunnyDoc.exists) throw new Error("Bunny not found");
+      const bunny = bunnyDoc.data();
+      if (!bunny) throw new Error("Bunny data is null");
+
+      // Get config
+      const configRef = db.collection("configuration").doc("base");
+      const configDoc = await configRef.get();
+      if (!configDoc.exists) throw new Error("Base configuration not found");
+      const config = configDoc.data();
+      if (!config) throw new Error("Configuration data is null");
+
+      let happinessIncrease = 0;
+      if (eventData.eventType === "feed") {
+        const feedType = eventData.eventData?.feedType;
+        if (feedType === "carrot") {
+          happinessIncrease = config.meals.carrot;
+        } else if (feedType === "lettuce") {
+          happinessIncrease = config.meals.lettuce;
+        } else {
+          throw new Error("Unknown feedType");
+        }
+      } else if (eventData.eventType === "play") {
+        happinessIncrease = config.playScore;
+      } else {
+        throw new Error("Unknown eventType");
+      }
+
+      // Update bunny happiness
+      const newHappiness = Math.min(10, bunny.happiness + happinessIncrease);
+      await bunnyRef.update({ happiness: newHappiness });
+
+      // Set event status to 'finished'
+      await eventRef.update({
+        status: "finished" as EventStatus,
+        processedAt: admin.firestore.FieldValue.serverTimestamp(),
+        newHappiness,
+      });
+    } catch (error: any) {
+      // Set event status to 'error'
+      await eventRef.update({
+        status: "error" as EventStatus,
+        errorMessage: error.message || "Unknown error",
+        errorAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      console.error("Error processing bunny event:", error);
+    }
+  });
