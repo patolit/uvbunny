@@ -1,0 +1,41 @@
+export type EventStatus = "pending" | "processing" | "finished" | "error";
+
+export interface BunnyEvent {
+  bunnyId: string;
+  eventType: "feed" | "play" | "pet" | "groom";
+  eventData?: {
+    feedType?: "carrot" | "lettuce";
+    playedWithBunnyId?: string;
+  };
+  status: EventStatus;
+  createdAt: FirebaseFirestore.Timestamp;
+  processedAt?: FirebaseFirestore.Timestamp;
+  errorAt?: FirebaseFirestore.Timestamp;
+  errorMessage?: string;
+  newHappiness?: number;
+  playmateBonus?: boolean;
+  partnerBunnyId?: string;
+  partnerHappinessIncrease?: number;
+  newPartnerHappiness?: number;
+}
+
+export interface Bunny {
+  id: string;
+  name: string;
+  happiness: number;
+  color: string;
+  birthDate: string;
+  playMates?: string[];
+}
+
+export interface Configuration {
+  meals: {
+    carrot: number;
+    lettuce: number;
+  };
+  activities: {
+    petting: number;
+    grooming: number;
+  };
+  playScore: number;
+}
