@@ -65,11 +65,9 @@ export class AddBunnyModal {
 
     const bunnyData: Omit<Bunny, 'id'> = {
       name: this.newBunny.name.trim(),
-      breed: 'Unknown', // Default breed
       birthDate: new Date().toISOString().split('T')[0], // Today's date
       happiness: this.newBunny.happiness,
-      lastFed: new Date().toISOString(),
-      notes: `Color: ${this.newBunny.color}`
+      color: this.newBunny.color
     };
 
     this.subscription.add(

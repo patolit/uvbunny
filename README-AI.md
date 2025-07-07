@@ -67,15 +67,20 @@ Move-Item -Path "uvbunny\*" -Destination "." -Force
 uvbunny/
 ├── src/
 │   ├── app/
-│   ├── styles.scss
-│   └── main.ts
-├── angular.json
-├── package.json
-├── README.md
-├── README-AI.md
-├── .git/
-├── .vscode/
-├── public/
+│   │   ├── pages/
+│   │   │   ├── home-page/
+│   │   │   │   ├── bunny-chart/
+│   │   │   │   └── add-bunny-modal/
+│   │   │   └── configuration-page/
+│   │   └── services/
+│   │       └── firebase.ts (AngularFire service)
+│   ├── angular.json
+│   ├── package.json
+│   ├── README.md
+│   ├── README-AI.md
+│   ├── .git/
+│   ├── .vscode/
+│   └── public/
 └── ...
 ```
 
@@ -184,7 +189,32 @@ npm install firebase
 
 ## Recent Updates
 
-### AngularFire Migration (Latest)
+### Service Architecture Refactoring (Latest)
+- **Separated concerns** into focused services for better maintainability
+- **ConfigurationService**: Handles all configuration management
+- **BunnyService**: Manages bunny CRUD operations
+- **ActivityService**: Handles bunny activities and scoring
+- **Shared types**: Centralized interface definitions
+- **Backward compatibility**: FirebaseService acts as a facade
+
+#### Service Structure:
+```
+src/app/services/
+├── types.ts              # Shared interfaces
+├── configuration.ts      # Configuration management
+├── bunny.ts             # Bunny CRUD operations
+├── activity.ts          # Activity and scoring logic
+└── firebase.ts          # Facade service (backward compatibility)
+```
+
+#### Benefits:
+✅ **Single Responsibility**: Each service has one clear purpose  
+✅ **Better Testing**: Easier to unit test individual services  
+✅ **Improved Maintainability**: Changes are isolated to specific services  
+✅ **Cleaner Code**: Reduced complexity in each service  
+✅ **Future Scalability**: Easy to extend individual services  
+
+### AngularFire Migration
 - **Migrated from Firebase SDK to AngularFire** for better Angular integration
 - **Real-time updates** for bunny data using Observable streams
 - **Improved performance** with lazy loading of Firebase modules
@@ -291,7 +321,11 @@ src/
 │   │   │   └── add-bunny-modal/
 │   │   └── configuration-page/
 │   └── services/
-│       └── firebase.ts (AngularFire service)
+│       ├── types.ts              # Shared interfaces
+│       ├── configuration.ts      # Configuration management
+│       ├── bunny.ts             # Bunny CRUD operations
+│       ├── activity.ts          # Activity and scoring logic
+│       └── firebase.ts          # Facade service
 ├── environments/
 │   └── environment.ts (Firebase config)
 └── styles.scss
