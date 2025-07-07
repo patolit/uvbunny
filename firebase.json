@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": "client/dist/uvbunny/browser",
+    "public": "client/dist/uvbunny/browser/browser",
     "ignore": [
       "firebase.json",
       "**/.*",
