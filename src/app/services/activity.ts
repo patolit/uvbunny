@@ -1,77 +1,66 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, switchMap, map, of, take } from 'rxjs';
-import { ConfigurationService } from './configuration';
-import { BunnyService } from './bunny';
-import { BaseConfiguration } from './types';
+import { Observable, of } from 'rxjs';
+import { Firestore, collection, addDoc } from '@angular/fire/firestore';
+import { BunnyEvent } from './types';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ActivityService {
-  private configurationService = inject(ConfigurationService);
-  private bunnyService = inject(BunnyService);
+  private firestore = inject(Firestore);
 
-  // Feed bunny with specific meal
+  // Feed bunny with specific meal - now sends event
   feedBunny(bunnyId: string, mealType: 'lettuce' | 'carrot'): Observable<void> {
-    return this.configurationService.getBaseConfiguration().pipe(
-      take(1),
-      switchMap(config =>
-        this.bunnyService.getBunnies().pipe(
-          take(1),
-          map(bunnies => bunnies.find(b => b.id === bunnyId)),
-          switchMap(bunny => {
-            if (bunny) {
-              const happinessIncrease = config.meals[mealType];
-              const newHappiness = Math.min(10, bunny.happiness + happinessIncrease);
-              return this.bunnyService.updateBunny(bunnyId, {
-                happiness: newHappiness
-              });
-            }
-            return of(void 0);
-          })
-        )
-      )
-    );
+    const eventsCollection = collection(this.firestore, 'bunnieEvent');
+    const eventData: Omit<BunnyEvent, 'id'> = {
+      bunnyId: bunnyId,
+      eventType: 'feed',
+      eventData: {
+        feedType: mealType
+      },
+      timestamp: new Date()
+    };
+
+    return new Observable(observer => {
+      addDoc(eventsCollection, eventData)
+        .then(() => {
+          observer.next();
+          observer.complete();
+        })
+        .catch(error => {
+          observer.error(error);
+        });
+    });
   }
 
-  // Play with bunny
+  // Play with bunny - now sends event
   playWithBunny(bunnyId: string): Observable<void> {
-    return this.configurationService.getBaseConfiguration().pipe(
-      take(1),
-      switchMap(config =>
-        this.bunnyService.getBunnies().pipe(
-          take(1),
-          map(bunnies => bunnies.find(b => b.id === bunnyId)),
-          switchMap(bunny => {
-            if (bunny) {
-              const newHappiness = Math.min(10, bunny.happiness + config.playScore);
-              return this.bunnyService.updateBunny(bunnyId, { happiness: newHappiness });
-            }
-            return of(void 0);
-          })
-        )
-      )
-    );
+    const eventsCollection = collection(this.firestore, 'bunnieEvent');
+    const eventData: Omit<BunnyEvent, 'id'> = {
+      bunnyId: bunnyId,
+      eventType: 'play',
+      eventData: {
+        playedWithBunnyId: bunnyId
+      },
+      timestamp: new Date()
+    };
+
+    return new Observable(observer => {
+      addDoc(eventsCollection, eventData)
+        .then(() => {
+          observer.next();
+          observer.complete();
+        })
+        .catch(error => {
+          observer.error(error);
+        });
+    });
   }
 
-  // Perform any activity with bunny
-  performActivity(bunnyId: string, activityType: keyof BaseConfiguration['activities']): Observable<void> {
-    return this.configurationService.getBaseConfiguration().pipe(
-      take(1),
-      switchMap(config =>
-        this.bunnyService.getBunnies().pipe(
-          take(1),
-          map(bunnies => bunnies.find(b => b.id === bunnyId)),
-          switchMap(bunny => {
-            if (bunny) {
-              const happinessIncrease = config.activities[activityType];
-              const newHappiness = Math.min(10, bunny.happiness + happinessIncrease);
-              return this.bunnyService.updateBunny(bunnyId, { happiness: newHappiness });
-            }
-            return of(void 0);
-          })
-        )
-      )
-    );
+  // Perform any activity with bunny - now sends event
+  performActivity(bunnyId: string, activityType: string): Observable<void> {
+    // For now, we'll treat all activities as play events
+    // You can extend this later if needed
+    return this.playWithBunny(bunnyId);
   }
 }

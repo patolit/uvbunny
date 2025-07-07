@@ -25,3 +25,14 @@ export interface BaseConfiguration {
     grooming: number;
   };
 }
+
+export interface BunnyEvent {
+  id?: string;
+  bunnyId: string;
+  eventType: 'feed' | 'play';
+  eventData: {
+    feedType?: 'carrot' | 'lettuce';
+    playedWithBunnyId?: string;
+  };
+  timestamp: Date;
+}
