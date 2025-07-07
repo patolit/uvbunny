@@ -1,0 +1,182 @@
+// Bunny Detail Container
+.bunny-detail-container {
+  min-height: 80vh;
+}
+
+// Bunny Card
+.bunny-card {
+  border: none;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  border-radius: 1rem;
+  overflow: hidden;
+
+  .card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 2rem 1.5rem;
+
+    .card-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+  }
+
+  .card-body {
+    padding: 2rem;
+  }
+}
+
+// Bunny Info Section
+.bunny-info {
+  .info-item {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    border-left: 4px solid #007bff;
+
+    .info-label {
+      font-weight: 600;
+      color: #495057;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    span {
+      font-size: 1.1rem;
+      color: #212529;
+    }
+  }
+}
+
+// Color Swatch
+.color-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #dee2e6;
+  display: inline-block;
+}
+
+// Happiness Section
+.happiness-section {
+  .happiness-display {
+    text-align: center;
+  }
+
+  .happiness-meter {
+    margin-bottom: 1rem;
+  }
+
+  .happiness-bar {
+    width: 100%;
+    height: 20px;
+    background-color: #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .happiness-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.5s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+
+  .happiness-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #495057;
+  }
+
+  .happiness-status {
+    .badge {
+      font-size: 1rem;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+    }
+  }
+}
+
+// Actions Section
+.actions-section {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 2px solid #e9ecef;
+
+  .action-group {
+    .action-group-title {
+      color: #495057;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #dee2e6;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      font-weight: 500;
+      border-radius: 0.5rem;
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .bunny-card {
+    .card-header {
+      padding: 1.5rem 1rem;
+
+      .card-title {
+        font-size: 2rem;
+      }
+    }
+
+    .card-body {
+      padding: 1.5rem;
+    }
+  }
+
+  .bunny-info {
+    .info-item {
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+    }
+  }
+
+  .actions-section {
+    .action-group {
+      margin-bottom: 1.5rem;
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .bunny-card {
+    .card-header {
+      .card-title {
+        font-size: 1.75rem;
+      }
+    }
+  }
+
+  .happiness-section {
+    .happiness-value {
+      font-size: 1.25rem;
+    }
+  }
+}
