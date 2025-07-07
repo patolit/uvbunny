@@ -1,109 +1,32 @@
-import * as functions from 'firebase-functions';
-import * as admin from 'firebase-admin';
+/**
+ * Import function triggers from their respective submodules:
+ *
+ * import {onCall} from "firebase-functions/v2/https";
+ * import {onDocumentWritten} from "firebase-functions/v2/firestore";
+ *
+ * See a full list of supported triggers at https://firebase.google.com/docs/functions
+ */
 
-admin.initializeApp();
+import {setGlobalOptions} from "firebase-functions";
+import {onRequest} from "firebase-functions/https";
+import * as logger from "firebase-functions/logger";
 
-const db = admin.firestore();
+// Start writing functions
+// https://firebase.google.com/docs/functions/typescript
 
-// Process bunny events and update happiness
-export const processBunnyEvent = functions.firestore
-  .document('bunnieEvent/{eventId}')
-  .onCreate(async (snap, context) => {
-    const eventData = snap.data();
-    const eventId = context.params.eventId;
+// For cost control, you can set the maximum number of containers that can be
+// running at the same time. This helps mitigate the impact of unexpected
+// traffic spikes by instead downgrading performance. This limit is a
+// per-function limit. You can override the limit for each function using the
+// `maxInstances` option in the function's options, e.g.
+// `onRequest({ maxInstances: 5 }, (req, res) => { ... })`.
+// NOTE: setGlobalOptions does not apply to functions using the v1 API. V1
+// functions should each use functions.runWith({ maxInstances: 10 }) instead.
+// In the v1 API, each function can only serve one request per container, so
+// this will be the maximum concurrent request count.
+setGlobalOptions({ maxInstances: 10 });
 
-    try {
-      console.log(`Processing event ${eventId}:`, eventData);
-
-      // Get the bunny
-      const bunnyRef = db.collection('bunnies').doc(eventData.bunnyId);
-      const bunnyDoc = await bunnyRef.get();
-
-      if (!bunnyDoc.exists) {
-        console.error(`Bunny ${eventData.bunnyId} not found`);
-        return;
-      }
-
-      const bunny = bunnyDoc.data();
-      if (!bunny) {
-        console.error(`Bunny data is null for ${eventData.bunnyId}`);
-        return;
-      }
-
-      // Get configuration
-      const configRef = db.collection('configuration').doc('base');
-      const configDoc = await configRef.get();
-
-      if (!configDoc.exists) {
-        console.error('Base configuration not found');
-        return;
-      }
-
-      const config = configDoc.data();
-      if (!config) {
-        console.error('Configuration data is null');
-        return;
-      }
-
-      let happinessIncrease = 0;
-
-      // Calculate happiness increase based on event type
-      if (eventData.eventType === 'feed') {
-        const feedType = eventData.eventData.feedType;
-        if (feedType === 'carrot') {
-          happinessIncrease = config.meals.carrot;
-        } else if (feedType === 'lettuce') {
-          happinessIncrease = config.meals.lettuce;
-        }
-      } else if (eventData.eventType === 'play') {
-        happinessIncrease = config.playScore;
-      }
-
-      // Calculate new happiness (max 10)
-      const newHappiness = Math.min(10, bunny.happiness + happinessIncrease);
-
-      // Update bunny happiness
-      await bunnyRef.update({
-        happiness: newHappiness
-      });
-
-      console.log(`Updated bunny ${eventData.bunnyId} happiness from ${bunny.happiness} to ${newHappiness}`);
-
-      // Optionally mark event as processed
-      await snap.ref.update({
-        processed: true,
-        processedAt: admin.firestore.FieldValue.serverTimestamp()
-      });
-
-    } catch (error) {
-      console.error('Error processing bunny event:', error);
-      throw error;
-    }
-  });
-
-// HTTP function to manually trigger event processing (optional)
-export const processAllUnprocessedEvents = functions.https.onRequest(async (req, res) => {
-  try {
-    const unprocessedEvents = await db.collection('bunnieEvent')
-      .where('processed', '==', false)
-      .get();
-
-    const batch = db.batch();
-    let processedCount = 0;
-
-    for (const doc of unprocessedEvents.docs) {
-      // Process each event (you could reuse the logic from above)
-      batch.update(doc.ref, {
-        processed: true,
-        processedAt: admin.firestore.FieldValue.serverTimestamp()
-      });
-      processedCount++;
-    }
-
-    await batch.commit();
-    res.json({ success: true, processedCount });
-  } catch (error) {
-    console.error('Error processing events:', error);
-    res.status(500).json({ error: 'Failed to process events' });
-  }
-});
+// export const helloWorld = onRequest((request, response) => {
+//   logger.info("Hello logs!", {structuredData: true});
+//   response.send("Hello from Firebase!");
+// });
