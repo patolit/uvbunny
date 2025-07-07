@@ -1,0 +1,60 @@
+// Table View Styles
+.bunny-table {
+  .sortable-header {
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #f8f9fa;
+    }
+
+    &.active {
+      background-color: #e3f2fd;
+    }
+  }
+
+  .bunny-row {
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #f8f9fa;
+    }
+  }
+
+  .color-indicator {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid #dee2e6;
+  }
+
+  .happiness-badge {
+    color: white;
+    font-size: 0.75rem;
+    font-weight: bold;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    min-width: 50px;
+    text-align: center;
+  }
+
+  .happiness-bar {
+    flex: 1;
+    height: 8px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-left: 0.5rem;
+
+    .happiness-fill {
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+  }
+
+  .empty-state-icon {
+    opacity: 0.5;
+  }
+}

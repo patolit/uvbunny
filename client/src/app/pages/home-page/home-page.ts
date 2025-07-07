@@ -2,14 +2,14 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FirebaseService, Bunny } from '../../services/firebase';
-import { BunnyChart } from './bunny-chart/bunny-chart';
+import { BunnyViewer } from './bunny-viewer/bunny-viewer';
 import { AddBunnyModal } from './add-bunny-modal/add-bunny-modal';
 import { Observable, Subscription, BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-home-page',
-  imports: [CommonModule, FormsModule, BunnyChart, AddBunnyModal],
+  imports: [CommonModule, FormsModule, BunnyViewer, AddBunnyModal],
   templateUrl: './home-page.html',
   styleUrl: './home-page.scss'
 })

@@ -69,12 +69,12 @@
       </div>
     </div>
 
-        <!-- Bunnies Status Graph -->
+        <!-- Bunnies Status Viewer -->
     <div class="bunnies-status">
-      <app-bunny-chart
+      <app-bunny-viewer
         [bunnies]="bunnies$ | async"
         (addBunny)="openAddModal()">
-      </app-bunny-chart>
+      </app-bunny-viewer>
     </div>
   </div>
 
