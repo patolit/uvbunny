@@ -11,10 +11,16 @@
       <div class="chart-bar" *ngFor="let bunny of bunnies || []">
         <div class="bar"
              [style.height]="getHappinessPercentage(bunny.happiness) + '%'"
-             [style.background-color]="getBunnyColor(bunny.color)">
+             [style.background-color]="getBunnyColor(bunny.color)"
+             (click)="onBunnyClick(bunny)"
+             [title]="'Click to view ' + bunny.name + ' details'">
           <span class="bar-value">{{ bunny.happiness }}/10</span>
         </div>
-        <div class="bar-label">{{ bunny.name }}</div>
+        <div class="bar-label"
+             (click)="onBunnyClick(bunny)"
+             [title]="'Click to view ' + bunny.name + ' details'">
+          {{ bunny.name }}
+        </div>
       </div>
     </div>
   </div>

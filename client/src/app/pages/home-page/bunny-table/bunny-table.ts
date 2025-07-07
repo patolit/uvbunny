@@ -46,7 +46,9 @@ export class BunnyTable {
 
   onBunnyClick(bunny: Bunny): void {
     if (bunny.id) {
-      this.router.navigate(['/bunny', bunny.id]);
+      this.router.navigate(['/bunny', bunny.id], {
+        queryParams: { source: 'table' }
+      });
     }
   }
 

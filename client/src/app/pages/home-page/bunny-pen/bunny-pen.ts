@@ -88,7 +88,9 @@ export class BunnyPen implements OnInit, OnChanges {
 
   onBunnyClick(bunny: Bunny): void {
     if (bunny.id) {
-      this.router.navigate(['/bunny', bunny.id]);
+      this.router.navigate(['/bunny', bunny.id], {
+        queryParams: { source: 'pen' }
+      });
     }
   }
 

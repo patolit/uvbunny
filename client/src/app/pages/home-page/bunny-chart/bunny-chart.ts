@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { Bunny } from '../../../services/firebase';
 
 @Component({
@@ -20,6 +21,8 @@ export class BunnyChart {
     { name: 'Spotted', hex: '#D3D3D3' }
   ];
 
+  constructor(private router: Router) {}
+
   getBunnyColor(colorName: string | undefined): string {
     if (!colorName) return '#8B4513'; // Default brown
     const color = this.bunnyColors.find(c => c.name === colorName);
@@ -30,6 +33,14 @@ export class BunnyChart {
     // Convert happiness from 0-10 scale to 0-100 percentage
     const percentage = (happiness / 10) * 100;
     return percentage;
+  }
+
+  onBunnyClick(bunny: Bunny): void {
+    if (bunny.id) {
+      this.router.navigate(['/bunny', bunny.id], {
+        queryParams: { source: 'chart' }
+      });
+    }
   }
 
   onAddBunny(): void {

@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { FirebaseService, Bunny } from '../../services/firebase';
 import { BunnyViewer } from './bunny-viewer/bunny-viewer';
 import { AddBunnyModal } from './add-bunny-modal/add-bunny-modal';
@@ -18,14 +19,28 @@ export class HomePage implements OnInit, OnDestroy {
   loading = true;
   error = '';
   showAddModal = false;
+  initialView: 'chart' | 'table' | 'pen' = 'chart';
   private subscription = new Subscription();
   private bunniesSubject = new BehaviorSubject<Bunny[]>([]);
 
-  constructor(private firebaseService: FirebaseService) {
+  constructor(
+    private firebaseService: FirebaseService,
+    private route: ActivatedRoute
+  ) {
     this.bunnies$ = this.bunniesSubject.asObservable();
   }
 
   ngOnInit(): void {
+    // Check for view parameter from URL
+    this.subscription.add(
+      this.route.queryParams.subscribe(params => {
+        const view = params['view'];
+        if (view && ['chart', 'table', 'pen'].includes(view)) {
+          this.initialView = view as 'chart' | 'table' | 'pen';
+        }
+      })
+    );
+
     this.loadBunnies();
   }
 

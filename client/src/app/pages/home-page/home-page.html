@@ -73,6 +73,7 @@
     <div class="bunnies-status">
       <app-bunny-viewer
         [bunnies]="bunnies$ | async"
+        [initialView]="initialView"
         (addBunny)="openAddModal()">
       </app-bunny-viewer>
     </div>

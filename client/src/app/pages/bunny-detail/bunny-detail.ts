@@ -19,6 +19,7 @@ export class BunnyDetail implements OnInit, OnDestroy {
   error = '';
   showPlayModal = false;
   currentBunny: Bunny | null = null;
+  sourceView: string = 'home';
   private subscription = new Subscription();
 
   constructor(
@@ -40,6 +41,13 @@ export class BunnyDetail implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Get source view from query parameters
+    this.subscription.add(
+      this.route.queryParams.subscribe(params => {
+        this.sourceView = params['source'] || 'home';
+      })
+    );
+
     this.subscription.add(
       this.bunny$.subscribe({
         next: (bunny) => {
@@ -63,7 +71,10 @@ export class BunnyDetail implements OnInit, OnDestroy {
   }
 
   onBackClick(): void {
-    this.router.navigate(['/details']);
+    // Navigate back to the source view
+    this.router.navigate(['/home'], {
+      queryParams: { view: this.sourceView }
+    });
   }
 
   onFeedLettuce(bunnyId: string, event?: Event): void {

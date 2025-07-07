@@ -86,7 +86,7 @@
   background: #007bff;
   border-radius: 4px 4px 0 0;
   position: relative;
-  transition: height 0.3s ease;
+  transition: height 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
   min-height: 20px;
   max-height: 100%;
   display: flex;
@@ -95,6 +95,12 @@
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   align-self: flex-end;
   margin-top: auto;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
 }
 
 .bar-value {
@@ -117,6 +123,13 @@
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+  cursor: pointer;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #007bff;
+    text-decoration: underline;
+  }
 }
 
 // Responsive Design

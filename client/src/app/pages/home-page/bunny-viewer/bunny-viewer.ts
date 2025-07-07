@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Bunny } from '../../../services/firebase';
 import { BunnyChart } from '../bunny-chart/bunny-chart';
@@ -13,11 +13,16 @@ type ViewMode = 'chart' | 'table' | 'pen';
   templateUrl: './bunny-viewer.html',
   styleUrl: './bunny-viewer.scss'
 })
-export class BunnyViewer {
+export class BunnyViewer implements OnInit {
   @Input() bunnies: Bunny[] | null = [];
+  @Input() initialView: ViewMode = 'chart';
   @Output() addBunny = new EventEmitter<void>();
 
   currentView: ViewMode = 'chart';
+
+  ngOnInit(): void {
+    this.currentView = this.initialView;
+  }
 
   setView(view: ViewMode): void {
     this.currentView = view;
