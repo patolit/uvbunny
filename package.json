@@ -1,0 +1,31 @@
+{
+  "name": "uvbunny",
+  "version": "1.0.0",
+  "description": "UVbunny - Bunny Management App with Firebase Cloud Functions",
+  "scripts": {
+    "install:all": "npm install && cd client && npm install && cd ../functions && npm install",
+    "build:client": "cd client && npm run build",
+    "build:functions": "cd functions && npm run build",
+    "build:all": "npm run build:client && npm run build:functions",
+    "serve:client": "cd client && npm start",
+    "serve:functions": "cd functions && npm run serve",
+    "deploy:client": "firebase deploy --only hosting",
+    "deploy:functions": "firebase deploy --only functions",
+    "deploy:all": "firebase deploy",
+    "emulators": "firebase emulators:start",
+    "test:client": "cd client && npm test",
+    "test:functions": "cd functions && npm test"
+  },
+  "keywords": [
+    "angular",
+    "firebase",
+    "cloud-functions",
+    "bunny",
+    "management"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "firebase-tools": "^12.0.0"
+  }
+}

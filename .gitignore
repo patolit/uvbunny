@@ -40,3 +40,18 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Functions
+functions/lib/
+functions/node_modules/
+
+# Client
+client/dist/
+client/node_modules/
+client/.angular/
