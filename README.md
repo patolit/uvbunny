@@ -135,7 +135,47 @@ npm run deploy:functions
 - `.firebaserc` - Project settings
 
 ### Environment Variables
-Create `client/src/environments/environment.ts` for Firebase config.
+
+**⚠️ Important: Environment files contain sensitive Firebase configuration and are not tracked in git for security reasons.**
+
+#### Setting Up Environment Files
+
+1. **Copy the template files:**
+   ```bash
+   cd client/src/environments
+   cp environment.template.ts environment.ts
+   cp environment.prod.template.ts environment.prod.ts
+   ```
+
+2. **Configure Firebase settings:**
+   - Open `environment.ts` and `environment.prod.ts`
+   - Replace the placeholder values with your Firebase project configuration:
+     ```typescript
+     export const environment = {
+       production: false, // true for environment.prod.ts
+       firebase: {
+         apiKey: "YOUR_ACTUAL_API_KEY",
+         authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+         projectId: "YOUR_PROJECT_ID",
+         storageBucket: "YOUR_PROJECT_ID.firebasestorage.app",
+         messagingSenderId: "YOUR_SENDER_ID",
+         appId: "YOUR_APP_ID",
+         measurementId: "YOUR_MEASUREMENT_ID"
+       }
+     };
+     ```
+
+3. **Get Firebase configuration:**
+   - Go to [Firebase Console](https://console.firebase.google.com/)
+   - Select your project
+   - Go to Project Settings → General
+   - Scroll down to "Your apps" section
+   - Copy the configuration object
+
+#### Security Notes
+- Environment files are automatically ignored by git (see `.gitignore`)
+- Never commit actual API keys to version control
+- Template files are safe to commit and share
 
 ## 🤝 Contributing
 
