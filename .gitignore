@@ -55,3 +55,7 @@ functions/node_modules/
 client/dist/
 client/node_modules/
 client/.angular/
+
+# Environment files (contain sensitive data)
+client/src/environments/environment.ts
+client/src/environments/environment.prod.ts
