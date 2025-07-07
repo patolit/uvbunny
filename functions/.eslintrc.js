@@ -11,6 +11,7 @@ module.exports = {
     "plugin:import/typescript",
     "google",
     "plugin:@typescript-eslint/recommended",
+    "prettier"
   ],
   parser: "@typescript-eslint/parser",
   parserOptions: {
@@ -26,8 +27,11 @@ module.exports = {
     "import",
   ],
   rules: {
-    "quotes": ["error", "double"],
     "import/no-unresolved": 0,
-    "indent": ["error", 2],
+    // Remove conflicting rules - let Prettier handle formatting
+    "quotes": "off",
+    "indent": "off",
+    "object-curly-spacing": "off",
+    "max-len": "off"
   },
 };
