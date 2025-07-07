@@ -49,7 +49,7 @@
          class="bunny-group"
          [attr.transform]="'translate(' + position.x + ',' + position.y + ')'"
          (click)="onBunnyClick(position.bunny)"
-         (mouseenter)="onBunnyHover(position.bunny)"
+         (mouseenter)="onBunnyHover(position.bunny, $event)"
          (mouseleave)="onBunnyLeave()">
 
         <!-- Bunny Body -->
@@ -124,33 +124,18 @@
         </text>
       </g>
 
-      <!-- Tooltip -->
-      <g *ngIf="hoveredBunny" class="tooltip" [attr.transform]="'translate(20, 20)'">
-        <rect
-          x="0"
-          y="0"
-          width="200"
-          height="80"
-          fill="#FFFFFF"
-          stroke="#CCCCCC"
-          stroke-width="1"
-          rx="5"
-          opacity="0.95"/>
-        <text x="10" y="20" font-size="14" font-weight="bold" fill="#333333">
-          {{ hoveredBunny.name }}
-        </text>
-        <text x="10" y="35" font-size="12" fill="#666666">
-          Happiness: {{ hoveredBunny.happiness }}/10
-        </text>
-        <text x="10" y="50" font-size="12" fill="#666666">
-          Color: {{ hoveredBunny.color }}
-        </text>
-        <text x="10" y="65" font-size="12" fill="#666666">
-          Age: {{ getAge(hoveredBunny.birthDate) }}
-        </text>
-      </g>
-
     </svg>
+
+    <!-- CSS Tooltip -->
+    <div *ngIf="hoveredBunny"
+         class="css-tooltip"
+         [style.left.px]="mouseX + 10"
+         [style.top.px]="mouseY - 60">
+      <div class="tooltip-content">
+        <div class="tooltip-name">{{ hoveredBunny.name }}</div>
+        <div class="tooltip-happiness">Happiness: {{ hoveredBunny.happiness }}/10</div>
+      </div>
+    </div>
 
     <!-- Pen Controls -->
     <div class="pen-controls mt-3">

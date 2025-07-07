@@ -24,6 +24,8 @@ export class BunnyPen implements OnInit, OnChanges {
   penWidth = 800;
   penHeight = 500;
   hoveredBunny: Bunny | null = null;
+  mouseX = 0;
+  mouseY = 0;
 
   bunnyColors = [
     { name: 'Brown', hex: '#8B4513' },
@@ -90,8 +92,10 @@ export class BunnyPen implements OnInit, OnChanges {
     }
   }
 
-  onBunnyHover(bunny: Bunny): void {
+  onBunnyHover(bunny: Bunny, event: MouseEvent): void {
     this.hoveredBunny = bunny;
+    this.mouseX = event.clientX;
+    this.mouseY = event.clientY;
   }
 
   onBunnyLeave(): void {

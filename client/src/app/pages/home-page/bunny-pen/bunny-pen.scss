@@ -29,10 +29,9 @@
 
   .bunny-group {
     cursor: pointer;
-    transition: transform 0.3s ease, filter 0.3s ease;
+    transition: filter 0.3s ease;
 
     &:hover {
-      transform: scale(1.1);
       filter: brightness(1.1);
     }
   }
@@ -47,48 +46,54 @@
 
   .bunny-ear {
     transition: fill 0.3s ease;
-
-    &:hover {
-      fill: #FFB6C1;
-    }
   }
 
   .bunny-eye {
     transition: r 0.2s ease;
-
-    .bunny-group:hover & {
-      r: 2;
-    }
   }
 
   .bunny-nose {
     transition: fill 0.3s ease;
-
-    .bunny-group:hover & {
-      fill: #FF1493;
-    }
   }
 
   .happiness-emoji {
     transition: font-size 0.3s ease;
-
-    .bunny-group:hover & {
-      font-size: 20;
-    }
   }
 
   .bunny-name {
     transition: font-size 0.3s ease, fill 0.3s ease;
-
-    .bunny-group:hover & {
-      font-size: 14;
-      fill: #007bff;
-    }
   }
 
   .tooltip {
     pointer-events: none;
     animation: fadeIn 0.2s ease-in-out;
+  }
+
+  .css-tooltip {
+    position: fixed;
+    z-index: 1000;
+    pointer-events: none;
+    animation: fadeIn 0.2s ease-in-out;
+  }
+
+  .tooltip-content {
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 8px 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    font-size: 12px;
+    max-width: 150px;
+  }
+
+  .tooltip-name {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 2px;
+  }
+
+  .tooltip-happiness {
+    color: #666;
   }
 
   .pen-controls {
