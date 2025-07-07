@@ -4,6 +4,7 @@ export interface Bunny {
   happiness: number;
   color: string;
   birthDate: string;
+  playMates?: string[]; // Array of bunny IDs that this bunny has played with
 }
 
 export interface BaseConfiguration {

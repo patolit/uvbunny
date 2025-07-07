@@ -48,8 +48,8 @@ export class FirebaseService {
     return this.activityService.feedBunny(bunnyId, mealType);
   }
 
-  playWithBunny(bunnyId: string): Observable<void> {
-    return this.activityService.playWithBunny(bunnyId);
+  playWithBunny(bunnyId: string, partnerBunnyId: string): Observable<void> {
+    return this.activityService.playWithBunny(bunnyId, partnerBunnyId);
   }
 
   performActivity(bunnyId: string, activityType: keyof BaseConfiguration['activities']): Observable<void> {

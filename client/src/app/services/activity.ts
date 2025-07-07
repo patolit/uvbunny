@@ -33,14 +33,14 @@ export class ActivityService {
     });
   }
 
-  // Play with bunny - now sends event
-  playWithBunny(bunnyId: string): Observable<void> {
+  // Play with bunny - now sends event with partner
+  playWithBunny(bunnyId: string, partnerBunnyId: string): Observable<void> {
     const eventsCollection = collection(this.firestore, 'bunnieEvent');
     const eventData: Omit<BunnyEvent, 'id'> = {
       bunnyId: bunnyId,
       eventType: 'play',
       eventData: {
-        playedWithBunnyId: bunnyId
+        playedWithBunnyId: partnerBunnyId
       },
       timestamp: new Date()
     };
@@ -59,8 +59,8 @@ export class ActivityService {
 
   // Perform any activity with bunny - now sends event
   performActivity(bunnyId: string, activityType: string): Observable<void> {
-    // For now, we'll treat all activities as play events
+    // For now, we'll treat all activities as play events with self
     // You can extend this later if needed
-    return this.playWithBunny(bunnyId);
+    return this.playWithBunny(bunnyId, bunnyId);
   }
 }
