@@ -61,6 +61,8 @@ export const processBunnyEvent = onDocumentCreated("bunnieEvent/{eventId}", asyn
       if (!config) throw new Error("Configuration data is null");
 
       let happinessIncrease = 0;
+      let updates: any = {};
+
       if (eventData.eventType === "feed") {
         const feedType = eventData.eventData?.feedType;
         if (feedType === "carrot") {
@@ -71,7 +73,54 @@ export const processBunnyEvent = onDocumentCreated("bunnieEvent/{eventId}", asyn
           throw new Error("Unknown feedType");
         }
       } else if (eventData.eventType === "play") {
-        happinessIncrease = config.playScore;
+        const partnerBunnyId = eventData.eventData?.playedWithBunnyId;
+        if (!partnerBunnyId) throw new Error("No play partner specified");
+
+        // Get partner bunny
+        const partnerBunnyRef = db.collection("bunnies").doc(partnerBunnyId);
+        const partnerBunnyDoc = await partnerBunnyRef.get();
+        if (!partnerBunnyDoc.exists) throw new Error("Partner bunny not found");
+        const partnerBunny = partnerBunnyDoc.data();
+        if (!partnerBunny) throw new Error("Partner bunny data is null");
+
+        // Check if they're already playmates (bonus points)
+        const isExistingPlaymate = bunny.playMates && bunny.playMates.includes(partnerBunnyId);
+        const isPartnerExistingPlaymate = partnerBunny.playMates && partnerBunny.playMates.includes(eventData.bunnyId);
+
+        // Calculate happiness increase (2x for existing playmates)
+        happinessIncrease = isExistingPlaymate ? config.playScore * 2 : config.playScore;
+
+        // Update playMates arrays for both bunnies
+        // Note: playMates are stored permanently to maintain social relationships
+        // Future consideration: Could add TTL or limit array size for performance
+        const bunnyPlayMates = bunny.playMates || [];
+        const partnerPlayMates = partnerBunny.playMates || [];
+
+        // Add partner to bunny's playMates if not already there
+        if (!bunnyPlayMates.includes(partnerBunnyId)) {
+          bunnyPlayMates.push(partnerBunnyId);
+        }
+
+        // Add bunny to partner's playMates if not already there
+        if (!partnerPlayMates.includes(eventData.bunnyId)) {
+          partnerPlayMates.push(eventData.bunnyId);
+        }
+
+        // Update both bunnies' playMates
+        await bunnyRef.update({ playMates: bunnyPlayMates });
+        await partnerBunnyRef.update({ playMates: partnerPlayMates });
+
+        // Also update partner's happiness (both bunnies get happiness from playing)
+        const partnerHappinessIncrease = isPartnerExistingPlaymate ? config.playScore * 2 : config.playScore;
+        const newPartnerHappiness = Math.min(10, partnerBunny.happiness + partnerHappinessIncrease);
+        await partnerBunnyRef.update({ happiness: newPartnerHappiness });
+
+        // Store playmate info in event for tracking
+        updates.playmateBonus = isExistingPlaymate;
+        updates.partnerBunnyId = partnerBunnyId;
+        updates.partnerHappinessIncrease = partnerHappinessIncrease;
+        updates.newPartnerHappiness = newPartnerHappiness;
+
       } else {
         throw new Error("Unknown eventType");
       }
@@ -85,6 +134,7 @@ export const processBunnyEvent = onDocumentCreated("bunnieEvent/{eventId}", asyn
         status: "finished" as EventStatus,
         processedAt: admin.firestore.FieldValue.serverTimestamp(),
         newHappiness,
+        ...updates
       });
     } catch (error: any) {
       // Set event status to 'error'
