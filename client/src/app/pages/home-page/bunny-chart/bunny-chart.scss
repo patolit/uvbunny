@@ -18,6 +18,7 @@
   color: #6c757d;
   text-align: right;
   padding-right: 0.5rem;
+  flex-shrink: 0;
 }
 
 .y-label {
@@ -35,6 +36,28 @@
   padding-bottom: 2rem;
   position: relative;
   height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  min-width: 0;
+  align-items: stretch;
+}
+
+.chart-bars::-webkit-scrollbar {
+  height: 8px;
+}
+
+.chart-bars::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.chart-bars::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.chart-bars::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 
 .chart-bars::before {
@@ -48,13 +71,14 @@
 }
 
 .chart-bar {
-  flex: 1;
+  flex: 0 0 60px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
   min-width: 60px;
   height: 100%;
+  position: relative;
 }
 
 .bar {
@@ -69,6 +93,8 @@
   align-items: flex-end;
   justify-content: center;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  align-self: flex-end;
+  margin-top: auto;
 }
 
 .bar-value {
@@ -87,6 +113,10 @@
   font-weight: 500;
   text-align: center;
   word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 // Responsive Design
@@ -97,6 +127,11 @@
 
   .chart-bars {
     gap: 0.5rem;
+  }
+
+  .chart-bar {
+    flex: 0 0 50px;
+    min-width: 50px;
   }
 
   .bar-label {
@@ -112,6 +147,11 @@
   .chart-y-axis {
     width: 30px;
     font-size: 0.7rem;
+  }
+
+  .chart-bar {
+    flex: 0 0 40px;
+    min-width: 40px;
   }
 
   .bar-value {
