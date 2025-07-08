@@ -3,7 +3,10 @@ import { onCall } from 'firebase-functions/v2/https';
 import * as admin from 'firebase-admin';
 import { SummaryData, BunnyEvent } from './types';
 
-const db = admin.firestore();
+// Get Firestore instance - this will be initialized when the function is called
+function getDb() {
+  return admin.firestore();
+}
 
 /**
  * Cloud Function to calculate and maintain summary statistics
@@ -69,6 +72,7 @@ export const updateSummaryOnEventCompletion = onDocumentUpdated(
 async function initializeSummaryData(): Promise<SummaryData> {
   console.log('Initializing summary data...');
 
+  const db = getDb();
   const bunniesSnapshot = await db.collection('bunnies').get();
   let totalBunnies = 0;
   let totalHappiness = 0;
@@ -93,9 +97,10 @@ async function initializeSummaryData(): Promise<SummaryData> {
 }
 
 /**
- * Ensure summary data exists, create if it doesn't
+ * Check if summary data exists and create it if it doesn't
  */
 async function ensureSummaryDataExists(): Promise<void> {
+  const db = getDb();
   const summaryRef = db.collection('summaryData').doc('current');
   const summaryDoc = await summaryRef.get();
 
@@ -113,17 +118,16 @@ async function ensureSummaryDataExists(): Promise<void> {
 async function updateSummaryForNewBunny(bunnyData: any): Promise<void> {
   const bunnyHappiness = bunnyData.happiness || 0;
 
+  // First ensure summary data exists
+  await ensureSummaryDataExists();
+
+  const db = getDb();
   await db.runTransaction(async (transaction) => {
     const summaryRef = db.collection('summaryData').doc('current');
     const summaryDoc = await transaction.get(summaryRef);
 
-    if (!summaryDoc.exists) {
-      // Initialize summary data
-      console.log('Summary data not found during new bunny creation, initializing...');
-      const summaryData = await initializeSummaryData();
-      transaction.set(summaryRef, summaryData as any);
-    } else {
-      // Update existing summary
+    // Summary should exist now due to ensureSummaryDataExists call
+    if (summaryDoc.exists) {
       const currentSummary = summaryDoc.data() as SummaryData;
 
       const newTotalBunnies = currentSummary.totalBunnies + 1;
@@ -149,10 +153,15 @@ async function updateSummaryForNewBunny(bunnyData: any): Promise<void> {
 async function updateSummaryForDeletedBunny(bunnyData: any): Promise<void> {
   const bunnyHappiness = bunnyData.happiness || 0;
 
+  // First ensure summary data exists
+  await ensureSummaryDataExists();
+
+  const db = getDb();
   await db.runTransaction(async (transaction) => {
     const summaryRef = db.collection('summaryData').doc('current');
     const summaryDoc = await transaction.get(summaryRef);
 
+    // Summary should exist now due to ensureSummaryDataExists call
     if (summaryDoc.exists) {
       const currentSummary = summaryDoc.data() as SummaryData;
 
@@ -171,11 +180,6 @@ async function updateSummaryForDeletedBunny(bunnyData: any): Promise<void> {
 
       transaction.update(summaryRef, updatedSummary as any);
       console.log(`Summary updated for deleted bunny: ${newTotalBunnies} bunnies, ${newAverageHappiness} average`);
-    } else {
-      // If summary doesn't exist, initialize it
-      console.log('Summary data not found during bunny deletion, initializing...');
-      const summaryData = await initializeSummaryData();
-      transaction.set(summaryRef, summaryData as any);
     }
   });
 }
@@ -189,55 +193,54 @@ async function updateSummaryForEventCompletion(event: BunnyEvent): Promise<void>
     return;
   }
 
+  // First ensure summary data exists
+  await ensureSummaryDataExists();
+
+  const db = getDb();
   await db.runTransaction(async (transaction) => {
     const summaryRef = db.collection('summaryData').doc('current');
     const summaryDoc = await transaction.get(summaryRef);
 
-    if (!summaryDoc.exists) {
-      // Initialize summary data if it doesn't exist
-      console.log('Summary data not found during event completion, initializing...');
-      const summaryData = await initializeSummaryData();
-      transaction.set(summaryRef, summaryData as any);
-      return;
+    // Summary should exist now due to ensureSummaryDataExists call
+    if (summaryDoc.exists) {
+      const currentSummary = summaryDoc.data() as SummaryData;
+
+      // Get the bunny's previous happiness value
+      const bunnyRef = db.collection('bunnies').doc(event.bunnyId);
+      const bunnyDoc = await transaction.get(bunnyRef);
+
+      if (!bunnyDoc.exists) {
+        console.log(`Bunny ${event.bunnyId} not found, skipping summary update`);
+        return;
+      }
+
+      const bunnyData = bunnyDoc.data();
+      if (!bunnyData) {
+        console.log(`Bunny ${event.bunnyId} data is null, skipping summary update`);
+        return;
+      }
+
+      const previousHappiness = bunnyData.happiness || 0;
+      const newHappiness = event.newHappiness!;
+
+      // Calculate the difference in happiness
+      const happinessDifference = newHappiness - previousHappiness;
+
+      // Update summary with the happiness change
+      const newTotalHappiness = currentSummary.totalHappiness + happinessDifference;
+      const newAverageHappiness = Math.round((newTotalHappiness / currentSummary.totalBunnies) * 10) / 10;
+
+      const updatedSummary: SummaryData = {
+        totalBunnies: currentSummary.totalBunnies,
+        totalHappiness: newTotalHappiness,
+        averageHappiness: newAverageHappiness,
+        lastUpdated: admin.firestore.Timestamp.now(),
+        lastEventId: event.bunnyId
+      };
+
+      transaction.update(summaryRef, updatedSummary as any);
+      console.log(`Summary updated for event completion: ${newAverageHappiness} average happiness (change: ${happinessDifference})`);
     }
-
-    const currentSummary = summaryDoc.data() as SummaryData;
-
-    // Get the bunny's previous happiness value
-    const bunnyRef = db.collection('bunnies').doc(event.bunnyId);
-    const bunnyDoc = await transaction.get(bunnyRef);
-
-    if (!bunnyDoc.exists) {
-      console.log(`Bunny ${event.bunnyId} not found, skipping summary update`);
-      return;
-    }
-
-    const bunnyData = bunnyDoc.data();
-    if (!bunnyData) {
-      console.log(`Bunny ${event.bunnyId} data is null, skipping summary update`);
-      return;
-    }
-
-    const previousHappiness = bunnyData.happiness || 0;
-    const newHappiness = event.newHappiness!;
-
-    // Calculate the difference in happiness
-    const happinessDifference = newHappiness - previousHappiness;
-
-    // Update summary with the happiness change
-    const newTotalHappiness = currentSummary.totalHappiness + happinessDifference;
-    const newAverageHappiness = Math.round((newTotalHappiness / currentSummary.totalBunnies) * 10) / 10;
-
-    const updatedSummary: SummaryData = {
-      totalBunnies: currentSummary.totalBunnies,
-      totalHappiness: newTotalHappiness,
-      averageHappiness: newAverageHappiness,
-      lastUpdated: admin.firestore.Timestamp.now(),
-      lastEventId: event.bunnyId
-    };
-
-    transaction.update(summaryRef, updatedSummary as any);
-    console.log(`Summary updated for event completion: ${newAverageHappiness} average happiness (change: ${happinessDifference})`);
   });
 }
 
@@ -253,11 +256,10 @@ export const recalculateSummary = onCall(async (request) => {
 
     console.log('Manual summary recalculation requested');
 
-    await db.runTransaction(async (transaction) => {
-      const summaryRef = db.collection('summaryData').doc('current');
-      const summaryData = await initializeSummaryData();
-      transaction.set(summaryRef, summaryData as any);
-    });
+    const summaryData = await initializeSummaryData();
+    const db = getDb();
+    const summaryRef = db.collection('summaryData').doc('current');
+    await summaryRef.set(summaryData as any);
 
     return { success: true, message: 'Summary recalculated successfully' };
   } catch (error) {
