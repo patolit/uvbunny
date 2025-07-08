@@ -9,7 +9,8 @@
         type="text"
         class="form-control"
         placeholder="Search bunnies by name, color, happiness, or birth date..."
-        [(ngModel)]="searchTerm">
+        [(ngModel)]="searchTerm"
+        (input)="filterResults()">
       <button
         class="btn btn-outline-secondary"
         type="button"

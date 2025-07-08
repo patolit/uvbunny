@@ -54,6 +54,32 @@ Interface for configuration documents in Firestore.
 - `calculateNewHappiness(current, increase)` - Calculate new happiness with bounds
 - `arePlayMates(bunny, partnerId)` - Check if bunnies are playmates
 
+## Future Enhancements
+
+### Bunny Colors Configuration
+**TODO**: Move bunny colors from frontend to backend configuration
+- Add `bunnyColors` array to the configuration collection
+- Structure: `{ name: string, hex: string, isActive: boolean }`
+- Allow admin to add/remove colors via configuration page
+- Support custom color hex codes with validation
+- Add color constraints (max colors, reserved names)
+- Update frontend to fetch colors from configuration instead of hardcoded array
+
+### Example Configuration Structure:
+```typescript
+interface Configuration {
+  meals: { carrot: number; lettuce: number };
+  activities: { petting: number; grooming: number };
+  playScore: number;
+  bunnyColors: Array<{
+    name: string;
+    hex: string;
+    isActive: boolean;
+    createdAt: Timestamp;
+  }>;
+}
+```
+
 ## Adding New Functions
 
 1. Create a new file in this directory (e.g., `new-function.ts`)
