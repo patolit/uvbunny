@@ -43,3 +43,11 @@ export interface Configuration {
   };
   playScore: number;
 }
+
+export interface SummaryData {
+  totalBunnies: number;
+  totalHappiness: number;
+  averageHappiness: number;
+  lastUpdated: FirebaseFirestore.Timestamp;
+  lastEventId?: string;
+}

@@ -1,6 +1,13 @@
 // Export all bunny functions
 export { processBunnyEvent } from './process-bunny-event';
 
+// Export summary calculation functions
+export {
+  calculateSummary,
+  updateSummaryOnEventCompletion,
+  recalculateSummary
+} from './summary-calculator';
+
 // Export utility functions
 export * from './utils';
 

@@ -11,7 +11,12 @@ import { setGlobalOptions } from 'firebase-functions';
 import * as admin from 'firebase-admin';
 
 // Import bunny functions
-import { processBunnyEvent } from './bunny-functions';
+import {
+  processBunnyEvent,
+  calculateSummary,
+  updateSummaryOnEventCompletion,
+  recalculateSummary
+} from './bunny-functions';
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
@@ -32,4 +37,9 @@ setGlobalOptions({ maxInstances: 10 });
 admin.initializeApp();
 
 // Export all functions
-export { processBunnyEvent };
+export {
+  processBunnyEvent,
+  calculateSummary,
+  updateSummaryOnEventCompletion,
+  recalculateSummary
+};
