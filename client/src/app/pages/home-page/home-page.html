@@ -60,9 +60,9 @@
               <div class="happiness-bar-container flex-grow-1 mx-3">
                 <div class="happiness-bar">
                   <div class="happiness-indicator"
-                       [style.left.%]="averageHappiness$ | async"
+                       [style.left.%]="averageHappiness * 10"
                        [style.background-color]="getOverallHappinessColor()">
-                    <span class="happiness-value">{{ averageHappiness$ | async }}%</span>
+                    <span class="happiness-value">{{ averageHappiness }}/10</span>
                   </div>
                 </div>
               </div>

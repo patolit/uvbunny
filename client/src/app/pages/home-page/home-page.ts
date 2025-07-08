@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -34,11 +34,13 @@ export class HomePage implements OnInit, OnDestroy {
   private bunniesSubject = new BehaviorSubject<Bunny[]>([]);
   private subscription = new Subscription();
   private totalAvailableBunnies = 0;
+  private summaryAverageHappiness = 0;
 
   constructor(
     private firebaseService: FirebaseService,
     private bunnyService: BunnyService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef
   ) {
     this.bunnies$ = this.bunniesSubject.asObservable();
   }
@@ -50,22 +52,6 @@ export class HomePage implements OnInit, OnDestroy {
         const view = params['view'];
         if (view && ['chart', 'table', 'pen'].includes(view)) {
           this.initialView = view as 'chart' | 'table' | 'pen';
-        }
-      })
-    );
-
-    // Load summary data to get total available bunnies
-    this.subscription.add(
-      this.firebaseService.getTotalBunnies().subscribe({
-        next: (totalBunnies) => {
-          this.totalAvailableBunnies = totalBunnies;
-          console.log(`Total available bunnies: ${totalBunnies}`);
-          this.updatePaginationState();
-        },
-        error: (error) => {
-          console.error('Error loading total bunnies:', error);
-          // Fallback to unlimited pagination if summary data fails
-          this.totalAvailableBunnies = 0;
         }
       })
     );
@@ -88,6 +74,27 @@ export class HomePage implements OnInit, OnDestroy {
         }
       })
     );
+
+    // Load summary data to get total available bunnies and average happiness
+    this.subscription.add(
+      this.firebaseService.getSummaryDataRealtime().subscribe({
+        next: (summaryData) => {
+          if (summaryData) {
+            this.totalAvailableBunnies = summaryData.totalBunnies;
+            this.summaryAverageHappiness = summaryData.averageHappiness;
+            console.log(`Summary data loaded: ${summaryData.totalBunnies} bunnies, ${summaryData.averageHappiness}% average happiness`);
+            this.updatePaginationState();
+            this.cdr.detectChanges(); // Trigger change detection
+          }
+        },
+        error: (error) => {
+          console.error('Error loading summary data:', error);
+          // Fallback to unlimited pagination if summary data fails
+          this.totalAvailableBunnies = 0;
+          this.summaryAverageHappiness = 0;
+        }
+      })
+    );
   }
 
   private handleRealTimeUpdate(realTimeBunnies: Bunny[]): void {
@@ -104,19 +111,6 @@ export class HomePage implements OnInit, OnDestroy {
 
     if (newBunnies.length > 0) {
       console.log(`Found ${newBunnies.length} new bunnies, adding to current view`);
-
-      // Refresh summary data to get updated total count
-      this.subscription.add(
-        this.firebaseService.getTotalBunnies().subscribe({
-          next: (totalBunnies) => {
-            this.totalAvailableBunnies = totalBunnies;
-            console.log(`Updated total available bunnies: ${totalBunnies}`);
-          },
-          error: (error) => {
-            console.error('Error updating total bunnies:', error);
-          }
-        })
-      );
 
       // Add new bunnies to the beginning of the list (most recent first)
       // Use a Map to ensure no duplicates by ID
@@ -300,24 +294,12 @@ export class HomePage implements OnInit, OnDestroy {
     return this.totalAvailableBunnies;
   }
 
-  // Calculate average happiness from loaded bunnies
+  // Get average happiness from summary data
   get averageHappiness(): number {
-    const bunnies = this.bunniesSubject.value;
-    if (bunnies.length === 0) return 0;
-    const total = bunnies.reduce((sum, bunny) => sum + bunny.happiness, 0);
-    return Math.round((total / bunnies.length) * 10); // Convert to percentage
+    return this.summaryAverageHappiness;
   }
 
-  // Observable for average happiness
-  get averageHappiness$(): Observable<number> {
-    return this.bunnies$.pipe(
-      map((bunnies: Bunny[]) => {
-        if (bunnies.length === 0) return 0;
-        const total = bunnies.reduce((sum: number, bunny: Bunny) => sum + bunny.happiness, 0);
-        return Math.round((total / bunnies.length) * 10); // Convert to percentage
-      })
-    );
-  }
+
 
   openAddModal(): void {
     this.showAddModal = true;
@@ -353,20 +335,16 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   getHappinessColor(happiness: number): string {
-    if (happiness >= 80) return '#28a745'; // Green for happy
-    if (happiness >= 60) return '#ffc107'; // Yellow for okay
-    if (happiness >= 40) return '#fd7e14'; // Orange for concerned
+    if (happiness >= 8) return '#28a745'; // Green for happy
+    if (happiness >= 6) return '#ffc107'; // Yellow for okay
+    if (happiness >= 4) return '#fd7e14'; // Orange for concerned
     return '#dc3545'; // Red for sad
   }
 
   getOverallHappinessColor(): string {
-    let bunnies: Bunny[] = [];
-    this.bunnies$.subscribe(b => bunnies = b).unsubscribe();
-
-    if (bunnies.length === 0) return '#dc3545'; // Red for no bunnies
-
-    const total = bunnies.reduce((sum, bunny) => sum + bunny.happiness, 0);
-    const average = Math.round((total / bunnies.length) * 10);
-    return this.getHappinessColor(average);
+    // Use the current summary average happiness
+    return this.getHappinessColor(this.summaryAverageHappiness);
   }
+
+
 }

@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Firestore, doc, getDoc } from '@angular/fire/firestore';
+import { Firestore, doc, getDoc, onSnapshot } from '@angular/fire/firestore';
 import { Observable, from } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { SummaryData } from './types';
@@ -35,5 +35,28 @@ export class SummaryService {
     return this.getSummaryData().pipe(
       map(summary => summary?.totalBunnies || 0)
     );
+  }
+
+  /**
+   * Get real-time updates of summary data
+   * @returns Observable that emits whenever summary data changes
+   */
+  getSummaryDataRealtime(): Observable<SummaryData | null> {
+    const summaryDoc = doc(this.firestore, 'summaryData', 'current');
+
+    return new Observable<SummaryData | null>(observer => {
+      const unsubscribe = onSnapshot(summaryDoc, (docSnapshot) => {
+        if (docSnapshot.exists()) {
+          observer.next(docSnapshot.data() as SummaryData);
+        } else {
+          observer.next(null);
+        }
+      }, (error) => {
+        observer.error(error);
+      });
+
+      // Return cleanup function
+      return () => unsubscribe();
+    });
   }
 }

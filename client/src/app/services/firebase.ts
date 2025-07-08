@@ -66,6 +66,10 @@ export class FirebaseService {
   getTotalBunnies(): Observable<number> {
     return this.summaryService.getTotalBunnies();
   }
+
+  getSummaryDataRealtime(): Observable<SummaryData | null> {
+    return this.summaryService.getSummaryDataRealtime();
+  }
 }
 
 // Re-export types for backward compatibility
