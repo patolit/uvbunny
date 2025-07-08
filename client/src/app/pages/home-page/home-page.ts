@@ -8,6 +8,7 @@ import { AddBunnyModal } from './add-bunny-modal/add-bunny-modal';
 import { Observable, Subscription, BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { BunnyService, InfiniteScrollState, InfiniteScrollResult } from '../../services/bunny';
+import { SummaryService, SummaryData } from '../../services/summary';
 import { QueryDocumentSnapshot, DocumentData } from '@angular/fire/firestore';
 
 @Component({
@@ -18,6 +19,7 @@ import { QueryDocumentSnapshot, DocumentData } from '@angular/fire/firestore';
 })
 export class HomePage implements OnInit, OnDestroy {
   bunnies$: Observable<Bunny[]>;
+  summaryData$: Observable<SummaryData | null>;
   loading = true;
   error = '';
   showAddModal = false;
@@ -36,9 +38,11 @@ export class HomePage implements OnInit, OnDestroy {
   constructor(
     private firebaseService: FirebaseService,
     private bunnyService: BunnyService,
+    private summaryService: SummaryService,
     private route: ActivatedRoute
   ) {
     this.bunnies$ = this.bunniesSubject.asObservable();
+    this.summaryData$ = this.summaryService.getSummaryData();
   }
 
   ngOnInit(): void {
@@ -222,21 +226,12 @@ export class HomePage implements OnInit, OnDestroy {
     return this.paginationState.loadedCount;
   }
 
-  // Calculate average happiness from observable
-  get averageHappiness(): number {
-    const bunnies = this.bunniesSubject.value;
-    if (bunnies.length === 0) return 0;
-    const total = bunnies.reduce((sum, bunny) => sum + bunny.happiness, 0);
-    return Math.round((total / bunnies.length) * 10); // Convert to percentage
-  }
-
-  // Observable for average happiness
+  // Observable for average happiness from summary data
   get averageHappiness$(): Observable<number> {
-    return this.bunnies$.pipe(
-      map((bunnies: Bunny[]) => {
-        if (bunnies.length === 0) return 0;
-        const total = bunnies.reduce((sum: number, bunny: Bunny) => sum + bunny.happiness, 0);
-        return Math.round((total / bunnies.length) * 10); // Convert to percentage
+    return this.summaryData$.pipe(
+      map((summary: SummaryData | null) => {
+        if (!summary) return 0;
+        return Math.round(summary.averageHappiness * 10); // Convert to percentage
       })
     );
   }
@@ -267,13 +262,8 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   getOverallHappinessColor(): string {
-    let bunnies: Bunny[] = [];
-    this.bunnies$.subscribe(b => bunnies = b).unsubscribe();
-
-    if (bunnies.length === 0) return '#dc3545'; // Red for no bunnies
-
-    const total = bunnies.reduce((sum, bunny) => sum + bunny.happiness, 0);
-    const average = Math.round((total / bunnies.length) * 10);
-    return this.getHappinessColor(average);
+    // For now, return a default color - the template will handle the dynamic color
+    // based on the averageHappiness$ observable
+    return '#dc3545'; // Default red color
   }
 }
