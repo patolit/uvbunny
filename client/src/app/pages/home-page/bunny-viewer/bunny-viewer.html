@@ -1,9 +1,14 @@
 <div class="card">
   <div class="card-header d-flex justify-content-between align-items-center">
-    <h4 class="mb-0">
-      <i class="bi bi-graph-up me-2"></i>
-      Bunnies Status
-    </h4>
+    <div class="d-flex align-items-center">
+      <h4 class="mb-0">
+        <i class="bi bi-graph-up me-2"></i>
+        Bunnies Status
+      </h4>
+      <span *ngIf="totalBunnies > 0" class="badge bg-secondary ms-2">
+        {{ loadedCount }} / {{ totalBunnies }}
+      </span>
+    </div>
     <div class="d-flex align-items-center gap-2">
       <!-- View Toggle Buttons -->
       <div class="btn-group" role="group">
@@ -50,6 +55,7 @@
       [isLoading]="isLoading"
       [hasMore]="hasMore"
       [loadedCount]="loadedCount"
+      [totalBunnies]="totalBunnies"
       (addBunny)="onAddBunny()"
       (loadMore)="onLoadMore()">
     </app-bunny-chart>
@@ -61,6 +67,7 @@
       [isLoading]="isLoading"
       [hasMore]="hasMore"
       [loadedCount]="loadedCount"
+      [totalBunnies]="totalBunnies"
       (addBunny)="onAddBunny()"
       (loadMore)="onLoadMore()">
     </app-bunny-table>
@@ -72,6 +79,7 @@
       [isLoading]="isLoading"
       [hasMore]="hasMore"
       [loadedCount]="loadedCount"
+      [totalBunnies]="totalBunnies"
       (addBunny)="onAddBunny()"
       (loadMore)="onLoadMore()">
     </app-bunny-pen>

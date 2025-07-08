@@ -19,6 +19,7 @@ export class BunnyViewer implements OnInit {
   @Input() isLoading: boolean = false;
   @Input() hasMore: boolean = true;
   @Input() loadedCount: number = 0;
+  @Input() totalBunnies: number = 0;
   @Output() addBunny = new EventEmitter<void>();
   @Output() loadMore = new EventEmitter<void>();
 

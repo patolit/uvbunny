@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { FirebaseService, Bunny } from '../../services/firebase';
+import { FirebaseService, Bunny, SummaryData } from '../../services/firebase';
 import { BunnyViewer } from './bunny-viewer/bunny-viewer';
 import { AddBunnyModal } from './add-bunny-modal/add-bunny-modal';
 import { Observable, Subscription, BehaviorSubject } from 'rxjs';
@@ -22,6 +22,7 @@ export class HomePage implements OnInit, OnDestroy {
   error = '';
   showAddModal = false;
   initialView: 'chart' | 'table' | 'pen' = 'chart';
+  showNewBunnyNotification = false;
 
   // Pagination state
   private paginationState: InfiniteScrollState = {
@@ -32,6 +33,7 @@ export class HomePage implements OnInit, OnDestroy {
   private allBunnies: Bunny[] = [];
   private bunniesSubject = new BehaviorSubject<Bunny[]>([]);
   private subscription = new Subscription();
+  private totalAvailableBunnies = 0;
 
   constructor(
     private firebaseService: FirebaseService,
@@ -48,6 +50,22 @@ export class HomePage implements OnInit, OnDestroy {
         const view = params['view'];
         if (view && ['chart', 'table', 'pen'].includes(view)) {
           this.initialView = view as 'chart' | 'table' | 'pen';
+        }
+      })
+    );
+
+    // Load summary data to get total available bunnies
+    this.subscription.add(
+      this.firebaseService.getTotalBunnies().subscribe({
+        next: (totalBunnies) => {
+          this.totalAvailableBunnies = totalBunnies;
+          console.log(`Total available bunnies: ${totalBunnies}`);
+          this.updatePaginationState();
+        },
+        error: (error) => {
+          console.error('Error loading total bunnies:', error);
+          // Fallback to unlimited pagination if summary data fails
+          this.totalAvailableBunnies = 0;
         }
       })
     );
@@ -73,8 +91,6 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   private handleRealTimeUpdate(realTimeBunnies: Bunny[]): void {
-    // Only update existing bunnies in our list, don't add new ones
-    // This prevents loading all bunnies at once
     const currentBunnyIds = new Set(this.allBunnies.map(b => b.id));
 
     // Update existing bunnies with real-time data
@@ -86,11 +102,70 @@ export class HomePage implements OnInit, OnDestroy {
     // Check if there are new bunnies that we haven't loaded yet
     const newBunnies = realTimeBunnies.filter(b => !currentBunnyIds.has(b.id));
 
-    console.log(`Real-time update: ${realTimeBunnies.length} total bunnies, ${this.allBunnies.length} loaded, ${newBunnies.length} new (not loading yet)`);
+    if (newBunnies.length > 0) {
+      console.log(`Found ${newBunnies.length} new bunnies, adding to current view`);
 
-    // Don't automatically add new bunnies - let pagination handle that
-    // Just update the observable with current loaded bunnies
-    this.bunniesSubject.next(this.allBunnies);
+      // Refresh summary data to get updated total count
+      this.subscription.add(
+        this.firebaseService.getTotalBunnies().subscribe({
+          next: (totalBunnies) => {
+            this.totalAvailableBunnies = totalBunnies;
+            console.log(`Updated total available bunnies: ${totalBunnies}`);
+          },
+          error: (error) => {
+            console.error('Error updating total bunnies:', error);
+          }
+        })
+      );
+
+      // Add new bunnies to the beginning of the list (most recent first)
+      // Use a Map to ensure no duplicates by ID
+      const bunnyMap = new Map<string, Bunny>();
+
+            // Add new bunnies first (they should appear at the top)
+      newBunnies.forEach(bunny => {
+        if (bunny.id) {
+          bunnyMap.set(bunny.id, bunny);
+        }
+      });
+
+      // Add existing bunnies (they will be overwritten if already in map)
+      this.allBunnies.forEach(bunny => {
+        if (bunny.id) {
+          bunnyMap.set(bunny.id, bunny);
+        }
+      });
+
+      // Convert back to array
+      this.allBunnies = Array.from(bunnyMap.values());
+      this.paginationState.loadedCount = this.allBunnies.length;
+
+      // Show notification
+      this.showNewBunnyNotification = true;
+      setTimeout(() => {
+        this.showNewBunnyNotification = false;
+      }, 3000); // Hide after 3 seconds
+
+      // Update pagination state after adding new bunnies
+      this.updatePaginationState();
+
+      // Update the observable
+      this.bunniesSubject.next(this.allBunnies);
+
+      // Debug: check for duplicates
+      this.checkForDuplicates();
+    } else {
+      // Just update the observable with current loaded bunnies
+      this.bunniesSubject.next(this.allBunnies);
+    }
+  }
+
+  private updatePaginationState(): void {
+    // Update hasMore based on total available bunnies
+    if (this.totalAvailableBunnies > 0) {
+      this.paginationState.hasMore = this.allBunnies.length < this.totalAvailableBunnies;
+    }
+    // If totalAvailableBunnies is 0, keep hasMore as true (unlimited pagination)
   }
 
   private resetPaginationAndReload(): void {
@@ -144,15 +219,27 @@ export class HomePage implements OnInit, OnDestroy {
       return;
     }
 
+    // Check if we've loaded all available bunnies based on summary data
+    if (this.totalAvailableBunnies > 0 && this.allBunnies.length >= this.totalAvailableBunnies) {
+      this.paginationState.hasMore = false;
+      return;
+    }
+
     this.paginationState.isLoading = true;
     this.bunnyService.getBunniesInfinite(batchSize, this.paginationState.lastDocument)
       .subscribe({
         next: (result: InfiniteScrollResult) => {
-          this.allBunnies = [...this.allBunnies, ...result.bunnies];
+          // Prevent duplicates by using a Map
+          const existingIds = new Set(this.allBunnies.map(b => b.id));
+          const newBunnies = result.bunnies.filter(bunny => bunny.id && !existingIds.has(bunny.id));
+
+          this.allBunnies = [...this.allBunnies, ...newBunnies];
           this.paginationState.lastDocument = result.lastDocument;
-          this.paginationState.hasMore = result.hasMore;
           this.paginationState.loadedCount = this.allBunnies.length;
           this.paginationState.isLoading = false;
+
+          // Update hasMore based on summary data and loaded count
+          this.updatePaginationState();
 
           // Update the observable
           this.bunniesSubject.next(this.allBunnies);
@@ -209,6 +296,10 @@ export class HomePage implements OnInit, OnDestroy {
     return this.paginationState.loadedCount;
   }
 
+  get totalBunnies(): number {
+    return this.totalAvailableBunnies;
+  }
+
   // Calculate average happiness from loaded bunnies
   get averageHappiness(): number {
     const bunnies = this.bunniesSubject.value;
@@ -238,7 +329,23 @@ export class HomePage implements OnInit, OnDestroy {
 
   onBunnyAdded(): void {
     // The real-time subscription will handle the new bunny automatically
-    // No need to manually reload - the real-time update will handle it
+    // New bunnies will appear at the top of the current view
+    console.log('Bunny added - real-time update will handle it');
+  }
+
+  dismissNewBunnyNotification(): void {
+    this.showNewBunnyNotification = false;
+  }
+
+  // Debug method to check for duplicates
+  private checkForDuplicates(): void {
+    const ids = this.allBunnies.map(b => b.id).filter(id => id);
+    const uniqueIds = new Set(ids);
+    if (ids.length !== uniqueIds.size) {
+      console.warn(`Duplicate bunnies detected! Total: ${ids.length}, Unique: ${uniqueIds.size}`);
+      const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
+      console.warn('Duplicate IDs:', duplicates);
+    }
   }
 
   retryConnection(): void {

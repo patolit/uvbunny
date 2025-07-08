@@ -3,7 +3,8 @@ import { Observable } from 'rxjs';
 import { BunnyService } from './bunny';
 import { ConfigurationService } from './configuration';
 import { ActivityService } from './activity';
-import { Bunny, BaseConfiguration } from './types';
+import { SummaryService } from './summary';
+import { Bunny, BaseConfiguration, SummaryData } from './types';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +13,7 @@ export class FirebaseService {
   private bunnyService = inject(BunnyService);
   private configurationService = inject(ConfigurationService);
   private activityService = inject(ActivityService);
+  private summaryService = inject(SummaryService);
 
   // Bunny data methods
   getBunnies(): Observable<Bunny[]> {
@@ -55,7 +57,16 @@ export class FirebaseService {
   performActivity(bunnyId: string, activityType: keyof BaseConfiguration['activities']): Observable<void> {
     return this.activityService.performActivity(bunnyId, activityType);
   }
+
+  // Summary data methods
+  getSummaryData(): Observable<SummaryData | null> {
+    return this.summaryService.getSummaryData();
+  }
+
+  getTotalBunnies(): Observable<number> {
+    return this.summaryService.getTotalBunnies();
+  }
 }
 
 // Re-export types for backward compatibility
-export type { Bunny, BaseConfiguration } from './types';
+export type { Bunny, BaseConfiguration, SummaryData } from './types';

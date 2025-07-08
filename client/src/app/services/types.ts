@@ -37,3 +37,11 @@ export interface BunnyEvent {
   };
   timestamp: Date;
 }
+
+export interface SummaryData {
+  totalBunnies: number;
+  totalHappiness: number;
+  averageHappiness: number;
+  lastUpdated: any; // Firebase Timestamp
+  lastEventId?: string;
+}
