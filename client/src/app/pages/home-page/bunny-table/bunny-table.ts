@@ -10,6 +10,8 @@ import {
   HostListener,
   ElementRef,
   ChangeDetectorRef,
+  AfterViewInit,
+  ViewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -24,7 +26,7 @@ import { Subject, debounceTime, distinctUntilChanged, takeUntil, BehaviorSubject
   templateUrl: './bunny-table.html',
   styleUrl: './bunny-table.scss',
 })
-export class BunnyTable implements OnInit, OnChanges, OnDestroy {
+export class BunnyTable implements OnInit, OnChanges, OnDestroy, AfterViewInit {
   @Input() bunnies: Bunny[] | null = [];
   @Input() isLoading: boolean = false;
   @Input() hasMore: boolean = true;
@@ -36,6 +38,8 @@ export class BunnyTable implements OnInit, OnChanges, OnDestroy {
   filteredBunnies: Bunny[] = [];
   sortConfig = { column: 'name', direction: 'asc' as 'asc' | 'desc' };
   private lastLoadMoreTime = 0;
+
+  @ViewChild('tableContainer', { static: false }) tableContainerRef!: ElementRef;
 
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
@@ -56,12 +60,15 @@ export class BunnyTable implements OnInit, OnChanges, OnDestroy {
         this.searchTerm = searchTerm;
         this.filterBunnies();
       });
-
-
   }
 
   ngOnInit(): void {
     this.filterBunnies();
+  }
+
+  ngAfterViewInit(): void {
+    // Set up scroll listener for the table container
+    this.setupScrollListener();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -70,20 +77,27 @@ export class BunnyTable implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  @HostListener('window:scroll')
-  onScroll(): void {
-    if (this.isNearBottom()) {
-      console.log('Window scroll detected near bottom, triggering loadMore');
-      this.triggerLoadMore();
+    private setupScrollListener(): void {
+    // Use the ViewChild reference to get the table container element
+    if (this.tableContainerRef && this.tableContainerRef.nativeElement) {
+      console.log('Setting up scroll listener on table container');
+      this.tableContainerRef.nativeElement.addEventListener('scroll', (event: Event) => {
+        const target = event.target as HTMLElement;
+        if (this.isNearBottomOfElement(target)) {
+          console.log('Table scroll detected near bottom, triggering loadMore');
+          this.triggerLoadMore();
+        }
+      });
+    } else {
+      console.error('Could not find table container element for scroll listener');
     }
   }
 
-  // Also listen for scroll on the table container
-  @HostListener('scroll', ['$event'])
-  onTableScroll(event: Event): void {
-    const target = event.target as HTMLElement;
-    if (this.isNearBottomOfElement(target)) {
-      console.log('Table scroll detected near bottom, triggering loadMore');
+  @HostListener('window:scroll')
+  onWindowScroll(): void {
+    // Also check window scroll as fallback
+    if (this.isNearBottom()) {
+      console.log('Window scroll detected near bottom, triggering loadMore');
       this.triggerLoadMore();
     }
   }
@@ -95,7 +109,15 @@ export class BunnyTable implements OnInit, OnChanges, OnDestroy {
       console.log('LoadMore called too quickly, ignoring');
       return;
     }
+
+    // Only trigger if we have more data to load and not currently loading
+    if (!this.hasMore || this.isLoading) {
+      console.log('Not triggering loadMore - hasMore:', this.hasMore, 'isLoading:', this.isLoading);
+      return;
+    }
+
     this.lastLoadMoreTime = now;
+    console.log('Triggering loadMore event');
     this.loadMore.emit();
   }
 
@@ -111,12 +133,30 @@ export class BunnyTable implements OnInit, OnChanges, OnDestroy {
     const scrollTop = element.scrollTop;
     const scrollHeight = element.scrollHeight;
     const clientHeight = element.clientHeight;
-    return scrollTop + clientHeight >= scrollHeight - threshold;
+    const isNear = scrollTop + clientHeight >= scrollHeight - threshold;
+
+    console.log('isNearBottomOfElement check:', {
+      scrollTop,
+      scrollHeight,
+      clientHeight,
+      threshold,
+      isNear,
+      calculation: scrollTop + clientHeight,
+      comparison: scrollHeight - threshold
+    });
+
+    return isNear;
   }
 
-  ngOnDestroy(): void {
+      ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+
+    // Clean up scroll listener
+    if (this.tableContainerRef && this.tableContainerRef.nativeElement) {
+      // Remove the scroll listener by recreating the element reference
+      this.tableContainerRef.nativeElement = null;
+    }
   }
 
   getBunnyColor(colorName: string | undefined): string {
