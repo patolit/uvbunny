@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Bunny } from '../../../services/firebase';
+import { getBunnyColor } from '../../../utils/bunny-colors';
 
 @Component({
   selector: 'app-bunny-table',
@@ -17,20 +18,10 @@ export class BunnyTable {
   searchTerm = '';
   sortConfig = { column: 'name', direction: 'asc' as 'asc' | 'desc' };
 
-  bunnyColors = [
-    { name: 'Brown', hex: '#8B4513' },
-    { name: 'White', hex: '#FFFFFF' },
-    { name: 'Gray', hex: '#808080' },
-    { name: 'Black', hex: '#000000' },
-    { name: 'Spotted', hex: '#D3D3D3' }
-  ];
-
   constructor(private router: Router) {}
 
   getBunnyColor(colorName: string | undefined): string {
-    if (!colorName) return '#8B4513'; // Default brown
-    const color = this.bunnyColors.find(c => c.name === colorName);
-    return color ? color.hex : '#8B4513';
+    return getBunnyColor(colorName);
   }
 
   getHappinessColor(happiness: number): string {

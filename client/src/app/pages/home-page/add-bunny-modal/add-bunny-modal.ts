@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FirebaseService, Bunny } from '../../../services/firebase';
+import { getAvailableBunnyColors } from '../../../utils/bunny-colors';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -23,13 +24,7 @@ export class AddBunnyModal {
   };
 
   // Color options for bunny selection
-  bunnyColors = [
-    { name: 'Brown', hex: '#8B4513' },
-    { name: 'White', hex: '#FFFFFF' },
-    { name: 'Gray', hex: '#808080' },
-    { name: 'Black', hex: '#000000' },
-    { name: 'Spotted', hex: '#D3D3D3' }
-  ];
+  bunnyColors = getAvailableBunnyColors();
 
   loading = false;
   error = '';
