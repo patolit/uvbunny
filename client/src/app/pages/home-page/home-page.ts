@@ -173,10 +173,22 @@ export class HomePage implements OnInit, OnDestroy {
       });
   }
 
-  // Public method for views to request more data
+      // Public method for views to request more data
   loadMoreData(): void {
     console.log(`loadMoreData called for view: ${this.initialView}`);
     console.log(`Current state: loaded=${this.paginationState.loadedCount}, hasMore=${this.paginationState.hasMore}, isLoading=${this.paginationState.isLoading}`);
+
+    // Prevent multiple simultaneous loading requests
+    if (this.paginationState.isLoading) {
+      console.log('Already loading, ignoring request');
+      return;
+    }
+
+    // Prevent loading if we've already loaded all bunnies
+    if (!this.paginationState.hasMore) {
+      console.log('No more bunnies to load, ignoring request');
+      return;
+    }
 
     const batchSize = this.getBatchSizeForCurrentView();
     console.log(`Will load ${batchSize} more bunnies`);

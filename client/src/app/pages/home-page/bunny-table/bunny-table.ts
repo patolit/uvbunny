@@ -35,6 +35,7 @@ export class BunnyTable implements OnInit, OnChanges, OnDestroy {
   searchTerm = '';
   filteredBunnies: Bunny[] = [];
   sortConfig = { column: 'name', direction: 'asc' as 'asc' | 'desc' };
+  private lastLoadMoreTime = 0;
 
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
@@ -55,6 +56,8 @@ export class BunnyTable implements OnInit, OnChanges, OnDestroy {
         this.searchTerm = searchTerm;
         this.filterBunnies();
       });
+
+
   }
 
   ngOnInit(): void {
@@ -70,7 +73,8 @@ export class BunnyTable implements OnInit, OnChanges, OnDestroy {
   @HostListener('window:scroll')
   onScroll(): void {
     if (this.isNearBottom()) {
-      this.loadMore.emit();
+      console.log('Window scroll detected near bottom, triggering loadMore');
+      this.triggerLoadMore();
     }
   }
 
@@ -79,8 +83,20 @@ export class BunnyTable implements OnInit, OnChanges, OnDestroy {
   onTableScroll(event: Event): void {
     const target = event.target as HTMLElement;
     if (this.isNearBottomOfElement(target)) {
-      this.loadMore.emit();
+      console.log('Table scroll detected near bottom, triggering loadMore');
+      this.triggerLoadMore();
     }
+  }
+
+  private triggerLoadMore(): void {
+    // Prevent multiple rapid calls (minimum 200ms between calls)
+    const now = Date.now();
+    if (now - this.lastLoadMoreTime < 200) {
+      console.log('LoadMore called too quickly, ignoring');
+      return;
+    }
+    this.lastLoadMoreTime = now;
+    this.loadMore.emit();
   }
 
   private isNearBottom(): boolean {
