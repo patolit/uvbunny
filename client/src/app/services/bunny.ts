@@ -82,7 +82,7 @@ export class BunnyService {
   }
 
   // Infinite scroll methods
-  getBunniesInfinite(batchSize: number = 20, lastDocument?: QueryDocumentSnapshot<DocumentData>): Observable<InfiniteScrollResult> {
+  getBunniesInfinite(batchSize: number = 5, lastDocument?: QueryDocumentSnapshot<DocumentData>): Observable<InfiniteScrollResult> {
     const bunniesCollection = collection(this.firestore, 'bunnies');
 
     let q = query(
@@ -102,7 +102,9 @@ export class BunnyService {
           ...doc.data()
         })) as Bunny[];
 
-        const lastDoc = snapshot.docs[snapshot.docs.length - 1];
+        const lastDoc = snapshot.docs.length > 0 ? snapshot.docs[snapshot.docs.length - 1] : undefined;
+        // hasMore is true if we got exactly the batch size (meaning there might be more)
+        // or if we have a lastDocument but got fewer results than requested
         const hasMore = snapshot.docs.length === batchSize;
 
         return {

@@ -74,7 +74,11 @@
       <app-bunny-viewer
         [bunnies]="bunnies$ | async"
         [initialView]="initialView"
-        (addBunny)="openAddModal()">
+        [isLoading]="isLoading"
+        [hasMore]="hasMore"
+        [loadedCount]="loadedCount"
+        (addBunny)="openAddModal()"
+        (loadMore)="loadMoreData()">
       </app-bunny-viewer>
     </div>
   </div>

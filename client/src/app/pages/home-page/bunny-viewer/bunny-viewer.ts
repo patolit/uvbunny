@@ -16,7 +16,11 @@ type ViewMode = 'chart' | 'table' | 'pen';
 export class BunnyViewer implements OnInit {
   @Input() bunnies: Bunny[] | null = [];
   @Input() initialView: ViewMode = 'chart';
+  @Input() isLoading: boolean = false;
+  @Input() hasMore: boolean = true;
+  @Input() loadedCount: number = 0;
   @Output() addBunny = new EventEmitter<void>();
+  @Output() loadMore = new EventEmitter<void>();
 
   currentView: ViewMode = 'chart';
 
@@ -30,5 +34,9 @@ export class BunnyViewer implements OnInit {
 
   onAddBunny(): void {
     this.addBunny.emit();
+  }
+
+  onLoadMore(): void {
+    this.loadMore.emit();
   }
 }

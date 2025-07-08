@@ -1,27 +1,65 @@
 <div class="bunny-chart">
-  <div class="chart-container">
-    <div class="chart-y-axis">
-      <div class="y-label">10</div>
-      <div class="y-label">7.5</div>
-      <div class="y-label">5</div>
-      <div class="y-label">2.5</div>
-      <div class="y-label">0</div>
+  <!-- Empty State -->
+  <div *ngIf="!bunnies || bunnies.length === 0" class="text-center py-4">
+    <div class="chart-placeholder mb-3">
+      <i class="bi bi-graph-up text-muted" style="font-size: 4rem;"></i>
     </div>
-    <div class="chart-bars">
-      <div class="chart-bar" *ngFor="let bunny of bunnies || []">
-        <div class="bar"
-             [style.height]="getHappinessPercentage(bunny.happiness) + '%'"
-             [style.background-color]="getBunnyColor(bunny.color)"
-             (click)="onBunnyClick(bunny)"
-             [title]="'Click to view ' + bunny.name + ' details'">
-          <span class="bar-value">{{ bunny.happiness }}/10</span>
-        </div>
-        <div class="bar-label"
-             (click)="onBunnyClick(bunny)"
-             [title]="'Click to view ' + bunny.name + ' details'">
-          {{ bunny.name }}
+    <h5 class="text-muted mb-2">No Data to Display</h5>
+    <p class="text-muted mb-3">No bunnies available for chart view!</p>
+    <button class="btn btn-primary" (click)="onAddBunny()">
+      <i class="bi bi-plus-circle me-2"></i>
+      Add Bunny
+    </button>
+  </div>
+
+  <!-- Chart Container with Horizontal Scroll -->
+  <div *ngIf="bunnies && bunnies.length > 0" class="chart-scroll-container" style="overflow-x: auto;">
+    <div class="chart-container">
+      <div class="chart-y-axis">
+        <div class="y-label">10</div>
+        <div class="y-label">7.5</div>
+        <div class="y-label">5</div>
+        <div class="y-label">2.5</div>
+        <div class="y-label">0</div>
+      </div>
+      <div class="chart-bars">
+        <div class="chart-bar" *ngFor="let bunny of bunnies || []">
+          <div class="bar"
+               [style.height]="getHappinessPercentage(bunny.happiness) + '%'"
+               [style.background-color]="getBunnyColor(bunny.color)"
+               (click)="onBunnyClick(bunny)"
+               [title]="'Click to view ' + bunny.name + ' details'">
+            <span class="bar-value">{{ bunny.happiness }}/10</span>
+          </div>
+          <div class="bar-label"
+               (click)="onBunnyClick(bunny)"
+               [title]="'Click to view ' + bunny.name + ' details'">
+            {{ bunny.name }}
+          </div>
         </div>
       </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="text-center py-3">
+      <div class="spinner-border spinner-border-sm text-primary" role="status">
+        <span class="visually-hidden">Loading more...</span>
+      </div>
+      <p class="mt-2 text-muted small">Loading more bunnies...</p>
+    </div>
+
+    <!-- Load More Info -->
+    <div *ngIf="!isLoading && hasMore" class="text-center py-2">
+      <p class="text-muted small">
+        Scroll right to load more bunnies ({{ loadedCount }} loaded)
+      </p>
+    </div>
+
+    <!-- No More Data -->
+    <div *ngIf="!isLoading && !hasMore" class="text-center py-2">
+      <p class="text-muted small">
+        All {{ loadedCount }} bunnies loaded
+      </p>
     </div>
   </div>
 </div>

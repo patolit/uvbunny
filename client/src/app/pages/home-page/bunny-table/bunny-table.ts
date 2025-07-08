@@ -6,13 +6,17 @@ import {
   OnChanges,
   SimpleChanges,
   OnDestroy,
+  OnInit,
+  HostListener,
+  ElementRef,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Bunny } from '../../../services/firebase';
 import { getBunnyColor } from '../../../utils/bunny-colors';
-import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged, takeUntil, BehaviorSubject, combineLatest } from 'rxjs';
 
 @Component({
   selector: 'app-bunny-table',
@@ -20,17 +24,26 @@ import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
   templateUrl: './bunny-table.html',
   styleUrl: './bunny-table.scss',
 })
-export class BunnyTable implements OnChanges, OnDestroy {
+export class BunnyTable implements OnInit, OnChanges, OnDestroy {
   @Input() bunnies: Bunny[] | null = [];
+  @Input() isLoading: boolean = false;
+  @Input() hasMore: boolean = true;
+  @Input() loadedCount: number = 0;
   @Output() addBunny = new EventEmitter<void>();
+  @Output() loadMore = new EventEmitter<void>();
 
   searchTerm = '';
   filteredBunnies: Bunny[] = [];
   sortConfig = { column: 'name', direction: 'asc' as 'asc' | 'desc' };
+
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router,
+    private elementRef: ElementRef,
+    private cdr: ChangeDetectorRef
+  ) {
     // Set up debounced search
     this.searchSubject
       .pipe(
@@ -44,10 +57,45 @@ export class BunnyTable implements OnChanges, OnDestroy {
       });
   }
 
+  ngOnInit(): void {
+    this.filterBunnies();
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['bunnies']) {
       this.filterBunnies();
     }
+  }
+
+  @HostListener('window:scroll')
+  onScroll(): void {
+    if (this.isNearBottom()) {
+      this.loadMore.emit();
+    }
+  }
+
+  // Also listen for scroll on the table container
+  @HostListener('scroll', ['$event'])
+  onTableScroll(event: Event): void {
+    const target = event.target as HTMLElement;
+    if (this.isNearBottomOfElement(target)) {
+      this.loadMore.emit();
+    }
+  }
+
+  private isNearBottom(): boolean {
+    const threshold = 100; // pixels from bottom
+    const position = window.scrollY + window.innerHeight;
+    const height = document.documentElement.scrollHeight;
+    return position > height - threshold;
+  }
+
+  private isNearBottomOfElement(element: HTMLElement): boolean {
+    const threshold = 50; // pixels from bottom
+    const scrollTop = element.scrollTop;
+    const scrollHeight = element.scrollHeight;
+    const clientHeight = element.clientHeight;
+    return scrollTop + clientHeight >= scrollHeight - threshold;
   }
 
   ngOnDestroy(): void {
@@ -98,8 +146,8 @@ export class BunnyTable implements OnChanges, OnDestroy {
       : 'bi-arrow-down';
   }
 
-    filterBunnies(): void {
-    if (!this.bunnies) {
+  filterBunnies(): void {
+    if (!this.bunnies || this.bunnies.length === 0) {
       this.filteredBunnies = [];
       return;
     }
@@ -147,6 +195,7 @@ export class BunnyTable implements OnChanges, OnDestroy {
   clearSearch(): void {
     this.searchTerm = '';
     this.searchSubject.next('');
+    this.filterBunnies();
   }
 
   filterResults(): void {

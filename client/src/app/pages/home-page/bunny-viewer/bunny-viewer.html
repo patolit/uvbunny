@@ -47,21 +47,33 @@
     <app-bunny-chart
       *ngIf="currentView === 'chart'"
       [bunnies]="bunnies"
-      (addBunny)="onAddBunny()">
+      [isLoading]="isLoading"
+      [hasMore]="hasMore"
+      [loadedCount]="loadedCount"
+      (addBunny)="onAddBunny()"
+      (loadMore)="onLoadMore()">
     </app-bunny-chart>
 
     <!-- Table View -->
     <app-bunny-table
       *ngIf="currentView === 'table'"
       [bunnies]="bunnies"
-      (addBunny)="onAddBunny()">
+      [isLoading]="isLoading"
+      [hasMore]="hasMore"
+      [loadedCount]="loadedCount"
+      (addBunny)="onAddBunny()"
+      (loadMore)="onLoadMore()">
     </app-bunny-table>
 
     <!-- Pen View -->
     <app-bunny-pen
       *ngIf="currentView === 'pen'"
       [bunnies]="bunnies"
-      (addBunny)="onAddBunny()">
+      [isLoading]="isLoading"
+      [hasMore]="hasMore"
+      [loadedCount]="loadedCount"
+      (addBunny)="onAddBunny()"
+      (loadMore)="onLoadMore()">
     </app-bunny-pen>
 
   </div>
