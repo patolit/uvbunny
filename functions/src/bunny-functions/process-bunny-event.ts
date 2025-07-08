@@ -49,6 +49,7 @@ export const processBunnyEvent = onDocumentCreated(
         let partnerBunnyUpdates: any = {};
         let isExistingPlaymate = false;
         let partnerHappinessIncrease = 0;
+        let partnerBunny: any = null; // Declare partnerBunny at this scope
 
         if (eventData.eventType === 'feed') {
           const feedType = eventData.eventData?.feedType;
@@ -72,7 +73,7 @@ export const processBunnyEvent = onDocumentCreated(
           if (!partnerBunnyId) throw new Error('No play partner specified');
 
           // Get partner bunny within transaction
-          const partnerBunny = await getBunnyInTransaction(transaction, partnerBunnyId);
+          partnerBunny = await getBunnyInTransaction(transaction, partnerBunnyId);
 
           // Validate partner bunny timing
           const partnerValidation = validateEventTiming(partnerBunny, 'play', currentTime);
@@ -126,6 +127,10 @@ export const processBunnyEvent = onDocumentCreated(
           throw new Error('Unknown eventType');
         }
 
+        // Store original happiness values for delta calculation
+        const originalBunnyHappiness = bunny.happiness;
+        const originalPartnerHappiness = eventData.eventType === 'play' ? partnerBunny.happiness : 0;
+
         // Apply all updates within the transaction
         await updateBunnyInTransaction(transaction, eventData.bunnyId, bunnyUpdates);
 
@@ -134,16 +139,23 @@ export const processBunnyEvent = onDocumentCreated(
           await updateBunnyInTransaction(transaction, partnerBunnyId, partnerBunnyUpdates);
         }
 
+        // Calculate delta happiness using original values
+        const deltaHappiness = bunnyUpdates.happiness - originalBunnyHappiness;
+
         // Update event status to 'finished' with all relevant data
         const eventUpdateData: any = {
-          newHappiness: bunnyUpdates.happiness
+          newHappiness: bunnyUpdates.happiness,
+          deltaHappiness: deltaHappiness
         };
 
         if (eventData.eventType === 'play') {
+          const partnerDeltaHappiness = partnerBunnyUpdates.happiness - originalPartnerHappiness;
+
           eventUpdateData.playmateBonus = isExistingPlaymate;
           eventUpdateData.partnerBunnyId = eventData.eventData?.playedWithBunnyId;
           eventUpdateData.partnerHappinessIncrease = partnerHappinessIncrease;
           eventUpdateData.newPartnerHappiness = partnerBunnyUpdates.happiness;
+          eventUpdateData.partnerDeltaHappiness = partnerDeltaHappiness;
         }
 
         await updateEventStatusInTransaction(transaction, eventRef, 'finished', eventUpdateData);

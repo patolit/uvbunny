@@ -192,10 +192,12 @@ async function updateSummaryForDeletedBunny(bunnyData: any): Promise<void> {
  * Update summary when a bunny event is completed
  */
 async function updateSummaryForEventCompletion(event: BunnyEvent): Promise<void> {
-  if (!event.newHappiness) {
-    console.log('Event has no newHappiness value, skipping summary update');
+  if (!event.deltaHappiness) {
+    console.log('Event has no deltaHappiness value, skipping summary update');
     return;
   }
+
+  console.log(`Event ${event.bunnyId} completed with delta happiness: ${event.deltaHappiness}, updating summary`);
 
   const db = getDb();
   const summaryRef = db.collection('summaryData').doc('current');
@@ -203,37 +205,23 @@ async function updateSummaryForEventCompletion(event: BunnyEvent): Promise<void>
 
   // Check if summary exists
   if (summaryDoc.exists) {
-    // Summary exists, so we can safely update the happiness
+    // Summary exists, so we can safely update using delta values
     await db.runTransaction(async (transaction) => {
       const currentSummary = summaryDoc.data() as SummaryData;
 
-      // Get the bunny's previous happiness value
-      const bunnyRef = db.collection('bunnies').doc(event.bunnyId);
-      const bunnyDoc = await transaction.get(bunnyRef);
-
-      if (!bunnyDoc.exists) {
-        console.log(`Bunny ${event.bunnyId} not found, skipping summary update`);
-        return;
+      // Calculate total delta happiness (main bunny + partner bunny if applicable)
+      let totalDeltaHappiness = event.deltaHappiness || 0;
+      if (event.partnerDeltaHappiness) {
+        totalDeltaHappiness += event.partnerDeltaHappiness;
+        console.log(`Including partner delta: ${event.partnerDeltaHappiness}, total delta: ${totalDeltaHappiness}`);
       }
 
-      const bunnyData = bunnyDoc.data();
-      if (!bunnyData) {
-        console.log(`Bunny ${event.bunnyId} data is null, skipping summary update`);
-        return;
-      }
-
-      const previousHappiness = bunnyData.happiness || 0;
-      const newHappiness = event.newHappiness!;
-
-      // Calculate the difference in happiness
-      const happinessDifference = newHappiness - previousHappiness;
-
-      // Update summary with the happiness change
-      const newTotalHappiness = currentSummary.totalHappiness + happinessDifference;
+      // Update summary with the delta happiness
+      const newTotalHappiness = currentSummary.totalHappiness + totalDeltaHappiness;
       const newAverageHappiness = Math.round((newTotalHappiness / currentSummary.totalBunnies) * 10) / 10;
 
       const updatedSummary: SummaryData = {
-        totalBunnies: currentSummary.totalBunnies,
+        totalBunnies: currentSummary.totalBunnies, // No change in bunny count
         totalHappiness: newTotalHappiness,
         averageHappiness: newAverageHappiness,
         lastUpdated: admin.firestore.Timestamp.now(),
@@ -241,7 +229,7 @@ async function updateSummaryForEventCompletion(event: BunnyEvent): Promise<void>
       };
 
       transaction.update(summaryRef, updatedSummary as any);
-      console.log(`Summary updated for event completion: ${newAverageHappiness} average happiness (change: ${happinessDifference})`);
+      console.log(`Summary updated for event completion: ${newAverageHappiness} average happiness (delta: ${totalDeltaHappiness}, total: ${newTotalHappiness})`);
     });
   } else {
     // Summary doesn't exist, initialize it (this will calculate correct averages)

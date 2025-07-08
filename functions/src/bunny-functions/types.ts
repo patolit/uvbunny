@@ -15,10 +15,12 @@ export interface BunnyEvent {
   errorMessage?: string;
   rejectionReason?: string;
   newHappiness?: number;
+  deltaHappiness?: number; // Change in happiness for this bunny
   playmateBonus?: boolean;
   partnerBunnyId?: string;
   partnerHappinessIncrease?: number;
   newPartnerHappiness?: number;
+  partnerDeltaHappiness?: number; // Change in happiness for partner bunny (for play events)
 }
 
 export interface Bunny {
