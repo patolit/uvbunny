@@ -1,4 +1,4 @@
-export type EventStatus = "pending" | "processing" | "finished" | "error";
+export type EventStatus = "pending" | "processing" | "finished" | "error" | "rejected";
 
 export interface BunnyEvent {
   bunnyId: string;
@@ -11,7 +11,9 @@ export interface BunnyEvent {
   createdAt: FirebaseFirestore.Timestamp;
   processedAt?: FirebaseFirestore.Timestamp;
   errorAt?: FirebaseFirestore.Timestamp;
+  rejectedAt?: FirebaseFirestore.Timestamp;
   errorMessage?: string;
+  rejectionReason?: string;
   newHappiness?: number;
   playmateBonus?: boolean;
   partnerBunnyId?: string;
@@ -26,6 +28,8 @@ export interface Bunny {
   color: string;
   birthDate: string;
   playMates?: string[];
+  lastFeed?: FirebaseFirestore.Timestamp;
+  lastPlay?: FirebaseFirestore.Timestamp;
 }
 
 export interface Configuration {
