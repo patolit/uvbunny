@@ -5,14 +5,60 @@
     {
       "type": "npm",
       "script": "start",
+      "group": "build",
       "isBackground": true,
+      "options": {
+        "cwd": "${workspaceFolder}/client"
+      },
       "problemMatcher": {
         "owner": "typescript",
         "pattern": "$tsc",
         "background": {
           "activeOnStart": true,
           "beginsPattern": {
-            "regexp": "(.*?)"
+            "regexp": ".*"
+          },
+          "endsPattern": {
+            "regexp": "bundle generation complete"
+          }
+        }
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "type": "npm",
+      "script": "build",
+      "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}/client"
+      },
+      "problemMatcher": {
+        "owner": "typescript",
+        "pattern": "$tsc"
+      }
+    },
+    {
+      "type": "npm",
+      "script": "test",
+      "group": "test",
+      "isBackground": true,
+      "options": {
+        "cwd": "${workspaceFolder}/client"
+      },
+      "problemMatcher": {
+        "owner": "typescript",
+        "pattern": "$tsc",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": {
+            "regexp": ".*"
           },
           "endsPattern": {
             "regexp": "bundle generation complete"
@@ -22,15 +68,19 @@
     },
     {
       "type": "npm",
-      "script": "test",
+      "script": "watch",
+      "group": "build",
       "isBackground": true,
+      "options": {
+        "cwd": "${workspaceFolder}/client"
+      },
       "problemMatcher": {
         "owner": "typescript",
         "pattern": "$tsc",
         "background": {
           "activeOnStart": true,
           "beginsPattern": {
-            "regexp": "(.*?)"
+            "regexp": ".*"
           },
           "endsPattern": {
             "regexp": "bundle generation complete"
