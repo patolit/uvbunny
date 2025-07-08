@@ -118,16 +118,14 @@ async function ensureSummaryDataExists(): Promise<void> {
 async function updateSummaryForNewBunny(bunnyData: any): Promise<void> {
   const bunnyHappiness = bunnyData.happiness || 0;
 
-  // First ensure summary data exists
-  await ensureSummaryDataExists();
-
   const db = getDb();
-  await db.runTransaction(async (transaction) => {
-    const summaryRef = db.collection('summaryData').doc('current');
-    const summaryDoc = await transaction.get(summaryRef);
+  const summaryRef = db.collection('summaryData').doc('current');
+  const summaryDoc = await summaryRef.get();
 
-    // Summary should exist now due to ensureSummaryDataExists call
-    if (summaryDoc.exists) {
+  // Check if summary already exists
+  if (summaryDoc.exists) {
+    // Summary exists, so we can safely increment the counts
+    await db.runTransaction(async (transaction) => {
       const currentSummary = summaryDoc.data() as SummaryData;
 
       const newTotalBunnies = currentSummary.totalBunnies + 1;
@@ -143,8 +141,12 @@ async function updateSummaryForNewBunny(bunnyData: any): Promise<void> {
 
       transaction.update(summaryRef, updatedSummary as any);
       console.log(`Summary updated for new bunny: ${newTotalBunnies} bunnies, ${newAverageHappiness} average`);
-    }
-  });
+    });
+  } else {
+    // Summary doesn't exist, initialize it (this will count all bunnies including the new one)
+    console.log('Summary does not exist, initializing with all bunnies');
+    await ensureSummaryDataExists();
+  }
 }
 
 /**
@@ -153,16 +155,14 @@ async function updateSummaryForNewBunny(bunnyData: any): Promise<void> {
 async function updateSummaryForDeletedBunny(bunnyData: any): Promise<void> {
   const bunnyHappiness = bunnyData.happiness || 0;
 
-  // First ensure summary data exists
-  await ensureSummaryDataExists();
-
   const db = getDb();
-  await db.runTransaction(async (transaction) => {
-    const summaryRef = db.collection('summaryData').doc('current');
-    const summaryDoc = await transaction.get(summaryRef);
+  const summaryRef = db.collection('summaryData').doc('current');
+  const summaryDoc = await summaryRef.get();
 
-    // Summary should exist now due to ensureSummaryDataExists call
-    if (summaryDoc.exists) {
+  // Check if summary exists
+  if (summaryDoc.exists) {
+    // Summary exists, so we can safely decrement the counts
+    await db.runTransaction(async (transaction) => {
       const currentSummary = summaryDoc.data() as SummaryData;
 
       const newTotalBunnies = Math.max(0, currentSummary.totalBunnies - 1);
@@ -180,8 +180,12 @@ async function updateSummaryForDeletedBunny(bunnyData: any): Promise<void> {
 
       transaction.update(summaryRef, updatedSummary as any);
       console.log(`Summary updated for deleted bunny: ${newTotalBunnies} bunnies, ${newAverageHappiness} average`);
-    }
-  });
+    });
+  } else {
+    // Summary doesn't exist, initialize it (this will count all remaining bunnies)
+    console.log('Summary does not exist, initializing with remaining bunnies');
+    await ensureSummaryDataExists();
+  }
 }
 
 /**
@@ -193,16 +197,14 @@ async function updateSummaryForEventCompletion(event: BunnyEvent): Promise<void>
     return;
   }
 
-  // First ensure summary data exists
-  await ensureSummaryDataExists();
-
   const db = getDb();
-  await db.runTransaction(async (transaction) => {
-    const summaryRef = db.collection('summaryData').doc('current');
-    const summaryDoc = await transaction.get(summaryRef);
+  const summaryRef = db.collection('summaryData').doc('current');
+  const summaryDoc = await summaryRef.get();
 
-    // Summary should exist now due to ensureSummaryDataExists call
-    if (summaryDoc.exists) {
+  // Check if summary exists
+  if (summaryDoc.exists) {
+    // Summary exists, so we can safely update the happiness
+    await db.runTransaction(async (transaction) => {
       const currentSummary = summaryDoc.data() as SummaryData;
 
       // Get the bunny's previous happiness value
@@ -240,8 +242,12 @@ async function updateSummaryForEventCompletion(event: BunnyEvent): Promise<void>
 
       transaction.update(summaryRef, updatedSummary as any);
       console.log(`Summary updated for event completion: ${newAverageHappiness} average happiness (change: ${happinessDifference})`);
-    }
-  });
+    });
+  } else {
+    // Summary doesn't exist, initialize it (this will calculate correct averages)
+    console.log('Summary does not exist, initializing with all bunnies');
+    await ensureSummaryDataExists();
+  }
 }
 
 /**
