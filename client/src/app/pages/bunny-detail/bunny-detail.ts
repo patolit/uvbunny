@@ -15,11 +15,19 @@ import { PlayPartnerModal } from './play-partner-modal/play-partner-modal';
 })
 export class BunnyDetail implements OnInit, OnDestroy {
   bunny$: Observable<Bunny | null>;
+  availableBunnies$: Observable<Bunny[]>;
   loading = true;
   error = '';
   showPlayModal = false;
   currentBunny: Bunny | null = null;
   sourceView: string = 'home';
+  loadingStates = {
+    feedLettuce: false,
+    feedCarrot: false,
+    play: false,
+    pet: false,
+    groom: false
+  };
   private subscription = new Subscription();
 
   constructor(
@@ -35,6 +43,19 @@ export class BunnyDetail implements OnInit, OnDestroy {
         }
         return this.firebaseService.getBunnies().pipe(
           map(bunnies => bunnies.find(b => b.id === id) || null)
+        );
+      })
+    );
+
+    // Get available bunnies for play (excluding current bunny)
+    this.availableBunnies$ = this.route.params.pipe(
+      switchMap(params => {
+        const currentId = params['id'];
+        if (!currentId) {
+          return of([]);
+        }
+        return this.firebaseService.getBunnies().pipe(
+          map(bunnies => bunnies.filter(b => b.id !== currentId))
         );
       })
     );
@@ -81,12 +102,19 @@ export class BunnyDetail implements OnInit, OnDestroy {
     if (event) {
       event.stopPropagation();
     }
+    this.loadingStates.feedLettuce = true;
     console.log('Button clicked: Feeding lettuce to bunny:', bunnyId);
     this.firebaseService.feedBunny(bunnyId, 'lettuce')
       .pipe(take(1))
       .subscribe({
-        next: () => console.log('Fed lettuce to bunny'),
-        error: (error) => console.error('Error feeding bunny:', error)
+        next: () => {
+          console.log('Fed lettuce to bunny');
+          this.loadingStates.feedLettuce = false;
+        },
+        error: (error) => {
+          console.error('Error feeding bunny:', error);
+          this.loadingStates.feedLettuce = false;
+        }
       });
   }
 
@@ -94,11 +122,18 @@ export class BunnyDetail implements OnInit, OnDestroy {
     if (event) {
       event.stopPropagation();
     }
+    this.loadingStates.feedCarrot = true;
     this.firebaseService.feedBunny(bunnyId, 'carrot')
       .pipe(take(1))
       .subscribe({
-        next: () => console.log('Fed carrot to bunny'),
-        error: (error) => console.error('Error feeding bunny:', error)
+        next: () => {
+          console.log('Fed carrot to bunny');
+          this.loadingStates.feedCarrot = false;
+        },
+        error: (error) => {
+          console.error('Error feeding bunny:', error);
+          this.loadingStates.feedCarrot = false;
+        }
       });
   }
 
@@ -106,11 +141,13 @@ export class BunnyDetail implements OnInit, OnDestroy {
     if (event) {
       event.stopPropagation();
     }
+    this.loadingStates.play = true;
     this.showPlayModal = true;
   }
 
   onPlayModalClosed(): void {
     this.showPlayModal = false;
+    this.loadingStates.play = false;
   }
 
   onPlayPartnerSelected(partnerId: string): void {
@@ -121,8 +158,12 @@ export class BunnyDetail implements OnInit, OnDestroy {
           next: () => {
             console.log('Played with bunny partner');
             this.showPlayModal = false;
+            this.loadingStates.play = false;
           },
-          error: (error) => console.error('Error playing with bunny:', error)
+          error: (error) => {
+            console.error('Error playing with bunny:', error);
+            this.loadingStates.play = false;
+          }
         });
     }
   }
@@ -131,11 +172,18 @@ export class BunnyDetail implements OnInit, OnDestroy {
     if (event) {
       event.stopPropagation();
     }
+    this.loadingStates.pet = true;
     this.firebaseService.performActivity(bunnyId, 'petting')
       .pipe(take(1))
       .subscribe({
-        next: () => console.log('Petted bunny'),
-        error: (error) => console.error('Error petting bunny:', error)
+        next: () => {
+          console.log('Petted bunny');
+          this.loadingStates.pet = false;
+        },
+        error: (error) => {
+          console.error('Error petting bunny:', error);
+          this.loadingStates.pet = false;
+        }
       });
   }
 
@@ -143,11 +191,18 @@ export class BunnyDetail implements OnInit, OnDestroy {
     if (event) {
       event.stopPropagation();
     }
+    this.loadingStates.groom = true;
     this.firebaseService.performActivity(bunnyId, 'grooming')
       .pipe(take(1))
       .subscribe({
-        next: () => console.log('Groomed bunny'),
-        error: (error) => console.error('Error grooming bunny:', error)
+        next: () => {
+          console.log('Groomed bunny');
+          this.loadingStates.groom = false;
+        },
+        error: (error) => {
+          console.error('Error grooming bunny:', error);
+          this.loadingStates.groom = false;
+        }
       });
   }
 

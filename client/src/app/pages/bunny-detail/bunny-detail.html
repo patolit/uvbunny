@@ -104,16 +104,18 @@
                       <button
                         class="btn btn-success"
                         (click)="onFeedLettuce(bunny.id!, $event)"
-                        [disabled]="!bunny.id">
-                        <i class="bi bi-leaf me-2"></i>
-                        Feed Lettuce
+                        [disabled]="!bunny.id || loadingStates.feedLettuce">
+                        <span *ngIf="loadingStates.feedLettuce" class="spinner-border spinner-border-sm me-2"></span>
+                        <i *ngIf="!loadingStates.feedLettuce" class="bi bi-leaf me-2"></i>
+                        {{ loadingStates.feedLettuce ? 'Feeding...' : 'Feed Lettuce' }}
                       </button>
                       <button
                         class="btn btn-warning"
                         (click)="onFeedCarrot(bunny.id!, $event)"
-                        [disabled]="!bunny.id">
-                        <i class="bi bi-carrot me-2"></i>
-                        Feed Carrot
+                        [disabled]="!bunny.id || loadingStates.feedCarrot">
+                        <span *ngIf="loadingStates.feedCarrot" class="spinner-border spinner-border-sm me-2"></span>
+                        <i *ngIf="!loadingStates.feedCarrot" class="bi bi-carrot me-2"></i>
+                        {{ loadingStates.feedCarrot ? 'Feeding...' : 'Feed Carrot' }}
                       </button>
                     </div>
                   </div>
@@ -130,10 +132,15 @@
                       <button
                         class="btn btn-primary"
                         (click)="onPlayWithBunny(bunny.id!, $event)"
-                        [disabled]="!bunny.id">
-                        <i class="bi bi-play-circle me-2"></i>
-                        Play
+                        [disabled]="!bunny.id || loadingStates.play || (availableBunnies$ | async)?.length === 0">
+                        <span *ngIf="loadingStates.play" class="spinner-border spinner-border-sm me-2"></span>
+                        <i *ngIf="!loadingStates.play" class="bi bi-play-circle me-2"></i>
+                        {{ loadingStates.play ? 'Playing...' : 'Play' }}
                       </button>
+                      <small *ngIf="(availableBunnies$ | async)?.length === 0" class="text-muted text-center">
+                        <i class="bi bi-info-circle me-1"></i>
+                        No other bunnies available to play with
+                      </small>
                     </div>
                   </div>
                 </div>
