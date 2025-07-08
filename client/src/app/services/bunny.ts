@@ -1,7 +1,21 @@
 import { Injectable, inject } from '@angular/core';
-import { Firestore, collection, collectionData, doc, addDoc, updateDoc, deleteDoc } from '@angular/fire/firestore';
-import { Observable, map } from 'rxjs';
+import { Firestore, collection, collectionData, doc, addDoc, updateDoc, deleteDoc, query, orderBy, limit, startAfter, getDocs, QueryDocumentSnapshot, DocumentData } from '@angular/fire/firestore';
+import { Observable, map, from } from 'rxjs';
 import { Bunny } from './types';
+
+export interface InfiniteScrollState {
+  lastDocument?: QueryDocumentSnapshot<DocumentData>;
+  hasMore: boolean;
+  isLoading: boolean;
+  loadedCount: number;
+}
+
+export interface InfiniteScrollResult {
+  bunnies: Bunny[];
+  lastDocument?: QueryDocumentSnapshot<DocumentData>;
+  hasMore: boolean;
+  totalLoaded: number;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -65,5 +79,154 @@ export class BunnyService {
   // Update bunny happiness
   updateBunnyHappiness(id: string, happiness: number): Observable<void> {
     return this.updateBunny(id, { happiness });
+  }
+
+  // Infinite scroll methods
+  getBunniesInfinite(batchSize: number = 20, lastDocument?: QueryDocumentSnapshot<DocumentData>): Observable<InfiniteScrollResult> {
+    const bunniesCollection = collection(this.firestore, 'bunnies');
+
+    let q = query(
+      bunniesCollection,
+      orderBy('name'),
+      limit(batchSize)
+    );
+
+    if (lastDocument) {
+      q = query(q, startAfter(lastDocument));
+    }
+
+    return from(getDocs(q)).pipe(
+      map(snapshot => {
+        const bunnies = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Bunny[];
+
+        const lastDoc = snapshot.docs[snapshot.docs.length - 1];
+        const hasMore = snapshot.docs.length === batchSize;
+
+        return {
+          bunnies,
+          lastDocument: lastDoc,
+          hasMore,
+          totalLoaded: bunnies.length
+        };
+      })
+    );
+  }
+
+  getBunniesForChart(batchSize: number = 15, lastDocument?: QueryDocumentSnapshot<DocumentData>): Observable<InfiniteScrollResult> {
+    const bunniesCollection = collection(this.firestore, 'bunnies');
+
+    let q = query(
+      bunniesCollection,
+      orderBy('name'),
+      limit(batchSize)
+    );
+
+    if (lastDocument) {
+      q = query(q, startAfter(lastDocument));
+    }
+
+    return from(getDocs(q)).pipe(
+      map(snapshot => {
+        const bunnies = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Bunny[];
+
+        const lastDoc = snapshot.docs[snapshot.docs.length - 1];
+        const hasMore = snapshot.docs.length === batchSize;
+
+        return {
+          bunnies,
+          lastDocument: lastDoc,
+          hasMore,
+          totalLoaded: bunnies.length
+        };
+      })
+    );
+  }
+
+  getBunniesForPen(batchSize: number = 50, lastDocument?: QueryDocumentSnapshot<DocumentData>): Observable<InfiniteScrollResult> {
+    const bunniesCollection = collection(this.firestore, 'bunnies');
+
+    let q = query(
+      bunniesCollection,
+      orderBy('name'),
+      limit(batchSize)
+    );
+
+    if (lastDocument) {
+      q = query(q, startAfter(lastDocument));
+    }
+
+    return from(getDocs(q)).pipe(
+      map(snapshot => {
+        const bunnies = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Bunny[];
+
+        const lastDoc = snapshot.docs[snapshot.docs.length - 1];
+        const hasMore = snapshot.docs.length === batchSize;
+
+        return {
+          bunnies,
+          lastDocument: lastDoc,
+          hasMore,
+          totalLoaded: bunnies.length
+        };
+      })
+    );
+  }
+
+  // Search bunnies with infinite scroll (backend filtering)
+  searchBunniesInfinite(
+    searchTerm: string,
+    batchSize: number = 20,
+    lastDocument?: QueryDocumentSnapshot<DocumentData>
+  ): Observable<InfiniteScrollResult> {
+    const bunniesCollection = collection(this.firestore, 'bunnies');
+
+    // Note: This is a simplified search. For production, consider using
+    // Firestore's full-text search or Algolia for better search capabilities
+    let q = query(
+      bunniesCollection,
+      orderBy('name'),
+      limit(batchSize)
+    );
+
+    if (lastDocument) {
+      q = query(q, startAfter(lastDocument));
+    }
+
+    return from(getDocs(q)).pipe(
+      map(snapshot => {
+        const allBunnies = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Bunny[];
+
+        // Filter on client side for now (will be moved to backend)
+        const searchLower = searchTerm.toLowerCase().trim();
+        const filteredBunnies = allBunnies.filter(bunny =>
+          bunny.name.toLowerCase().includes(searchLower) ||
+          bunny.color.toLowerCase().includes(searchLower) ||
+          bunny.happiness.toString().includes(searchLower) ||
+          bunny.birthDate.toLowerCase().includes(searchLower)
+        );
+
+        const lastDoc = snapshot.docs[snapshot.docs.length - 1];
+        const hasMore = snapshot.docs.length === batchSize;
+
+        return {
+          bunnies: filteredBunnies,
+          lastDocument: lastDoc,
+          hasMore,
+          totalLoaded: filteredBunnies.length
+        };
+      })
+    );
   }
 }
