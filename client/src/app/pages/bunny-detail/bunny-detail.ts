@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -13,7 +13,7 @@ import { PlayPartnerModal } from './play-partner-modal/play-partner-modal';
   templateUrl: './bunny-detail.html',
   styleUrl: './bunny-detail.scss'
 })
-export class BunnyDetail implements OnInit, OnDestroy {
+export class BunnyDetail implements OnInit, OnDestroy, OnChanges {
   bunny$: Observable<Bunny | null>;
   availableBunnies$: Observable<Bunny[]>;
   loading = true;
@@ -24,16 +24,16 @@ export class BunnyDetail implements OnInit, OnDestroy {
   loadingStates = {
     feedLettuce: false,
     feedCarrot: false,
-    play: false,
-    pet: false,
-    groom: false
+    play: false
   };
   private subscription = new Subscription();
+  private previousHappiness = 0;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private firebaseService: FirebaseService
+    private firebaseService: FirebaseService,
+    private cdr: ChangeDetectorRef
   ) {
     this.bunny$ = this.route.params.pipe(
       switchMap(params => {
@@ -76,6 +76,18 @@ export class BunnyDetail implements OnInit, OnDestroy {
           this.currentBunny = bunny;
           if (!bunny) {
             this.error = 'Bunny not found';
+          } else {
+            // Check if happiness increased (indicating a successful action)
+            if (bunny.happiness > this.previousHappiness) {
+              // Trigger change detection to ensure UI updates
+              this.cdr.detectChanges();
+              // Use requestAnimationFrame to ensure UI updates before stopping loading
+              requestAnimationFrame(() => {
+                this.stopAllLoadingStates();
+              });
+            }
+            // Update previous happiness
+            this.previousHappiness = bunny.happiness;
           }
         },
         error: (error) => {
@@ -85,6 +97,11 @@ export class BunnyDetail implements OnInit, OnDestroy {
         }
       })
     );
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // This will be called when any input changes, but we're not using inputs
+    // We'll handle happiness changes in the bunny$ subscription
   }
 
   ngOnDestroy(): void {
@@ -98,17 +115,15 @@ export class BunnyDetail implements OnInit, OnDestroy {
     });
   }
 
-  onFeedLettuce(bunnyId: string, event?: Event): void {
+      onFeedLettuce(bunnyId: string, event?: Event): void {
     if (event) {
       event.stopPropagation();
     }
     this.loadingStates.feedLettuce = true;
+
     this.firebaseService.feedBunny(bunnyId, 'lettuce')
       .pipe(take(1))
       .subscribe({
-        next: () => {
-          this.loadingStates.feedLettuce = false;
-        },
         error: (error) => {
           console.error('Error feeding bunny:', error);
           this.loadingStates.feedLettuce = false;
@@ -116,17 +131,15 @@ export class BunnyDetail implements OnInit, OnDestroy {
       });
   }
 
-  onFeedCarrot(bunnyId: string, event?: Event): void {
+      onFeedCarrot(bunnyId: string, event?: Event): void {
     if (event) {
       event.stopPropagation();
     }
     this.loadingStates.feedCarrot = true;
+
     this.firebaseService.feedBunny(bunnyId, 'carrot')
       .pipe(take(1))
       .subscribe({
-        next: () => {
-          this.loadingStates.feedCarrot = false;
-        },
         error: (error) => {
           console.error('Error feeding bunny:', error);
           this.loadingStates.feedCarrot = false;
@@ -144,60 +157,26 @@ export class BunnyDetail implements OnInit, OnDestroy {
 
   onPlayModalClosed(): void {
     this.showPlayModal = false;
+    // If modal is closed without selecting a partner, stop loading
     this.loadingStates.play = false;
   }
 
-  onPlayPartnerSelected(partnerId: string): void {
+      onPlayPartnerSelected(partnerId: string): void {
     if (this.currentBunny) {
+      // Loading state is already set from onPlayWithBunny
       this.firebaseService.playWithBunny(this.currentBunny.id!, partnerId)
         .pipe(take(1))
         .subscribe({
-                  next: () => {
-          this.showPlayModal = false;
-          this.loadingStates.play = false;
-        },
+          next: () => {
+            this.showPlayModal = false;
+            // Loading state will be cleared when happiness changes
+          },
           error: (error) => {
             console.error('Error playing with bunny:', error);
             this.loadingStates.play = false;
           }
         });
     }
-  }
-
-  onPetBunny(bunnyId: string, event?: Event): void {
-    if (event) {
-      event.stopPropagation();
-    }
-    this.loadingStates.pet = true;
-    this.firebaseService.performActivity(bunnyId, 'petting')
-      .pipe(take(1))
-      .subscribe({
-        next: () => {
-          this.loadingStates.pet = false;
-        },
-        error: (error) => {
-          console.error('Error petting bunny:', error);
-          this.loadingStates.pet = false;
-        }
-      });
-  }
-
-  onGroomBunny(bunnyId: string, event?: Event): void {
-    if (event) {
-      event.stopPropagation();
-    }
-    this.loadingStates.groom = true;
-    this.firebaseService.performActivity(bunnyId, 'grooming')
-      .pipe(take(1))
-      .subscribe({
-        next: () => {
-          this.loadingStates.groom = false;
-        },
-        error: (error) => {
-          console.error('Error grooming bunny:', error);
-          this.loadingStates.groom = false;
-        }
-      });
   }
 
   getHappinessColor(happiness: number): string {
@@ -243,5 +222,14 @@ export class BunnyDetail implements OnInit, OnDestroy {
     if (happiness >= 6) return 'Happy';
     if (happiness >= 4) return 'Okay';
     return 'Sad';
+  }
+
+    /**
+   * Stop all loading states when happiness increases
+   */
+  private stopAllLoadingStates(): void {
+    this.loadingStates.feedLettuce = false;
+    this.loadingStates.feedCarrot = false;
+    this.loadingStates.play = false;
   }
 }
