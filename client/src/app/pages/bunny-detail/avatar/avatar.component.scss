@@ -1,7 +1,10 @@
-.avatar-card {
-  max-width: 200px;
-  margin: 0 auto;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+.avatar-container {
+  text-align: center;
+  min-width: 80px;
+  background: white;
+  border-radius: 12px;
+  padding: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 .avatar-img {
   display: flex;
@@ -14,9 +17,10 @@
   border-radius: 50%;
   width: 40px;
   height: 40px;
-  font-size: 0.9rem;
+  font-size: 0.75rem;
 }
 img.rounded-circle {
   object-fit: cover;
   background: #fff;
+  border: 2px solid #e9ecef;
 }

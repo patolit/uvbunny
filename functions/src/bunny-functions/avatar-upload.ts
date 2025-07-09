@@ -13,11 +13,6 @@ export const uploadBunnyAvatar = onCall({
   timeoutSeconds: 60,
 }, async (request) => {
   try {
-    // Check if user is authenticated
-    if (!request.auth) {
-      throw new Error('Authentication required');
-    }
-
     const { bunnyId, imageData, mimeType } = request.data;
 
     // Validate input
@@ -151,11 +146,6 @@ export const deleteBunnyAvatar = onCall({
   timeoutSeconds: 30,
 }, async (request) => {
   try {
-    // Check if user is authenticated
-    if (!request.auth) {
-      throw new Error('Authentication required');
-    }
-
     const { bunnyId } = request.data;
 
     if (!bunnyId) {

@@ -33,19 +33,21 @@
     <div class="row" *ngIf="bunny$ | async as bunny">
       <div class="col-lg-8 mx-auto">
         <div class="card bunny-card">
-          <div class="card-header text-center">
-            <h2 class="card-title mb-0">
-              <i class="bi bi-heart-fill text-danger me-3"></i>
-              {{ bunny.name }}
-            </h2>
+          <div class="card-header">
+            <div class="d-flex align-items-center justify-content-center">
+              <bunny-avatar
+                [avatarUrl]="bunny.avatarUrl || null"
+                [bunnyId]="bunny.id!"
+                (avatarUploaded)="onAvatarUploaded($event)">
+              </bunny-avatar>
+              <h2 class="card-title mb-0 ms-3">
+                <i class="bi bi-heart-fill text-danger me-3"></i>
+                {{ bunny.name }}
+              </h2>
+            </div>
           </div>
           <div class="card-body">
-            <!-- Avatar Section -->
-            <bunny-avatar
-              [avatarUrl]="bunny.avatarUrl || null"
-              [bunnyId]="bunny.id!"
-              (avatarUploaded)="onAvatarUploaded($event)">
-            </bunny-avatar>
+
             <!-- Bunny Info -->
             <div class="row mb-4">
               <div class="col-md-6">
