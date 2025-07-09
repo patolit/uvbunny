@@ -1,6 +1,6 @@
 // Export all bunny functions
 export { processBunnyEvent } from './process-bunny-event';
-export { checkIdleBunnies } from './idle-checker';
+export { checkIdleBunnies, manualCheckIdleBunnies } from './idle-checker';
 
 // Export summary calculation functions
 export {

@@ -16,7 +16,8 @@ import {
   calculateSummary,
   updateSummaryOnEventCompletion,
   recalculateSummary,
-  checkIdleBunnies
+  checkIdleBunnies,
+  manualCheckIdleBunnies
 } from './bunny-functions';
 
 // Import avatar functions
@@ -50,6 +51,7 @@ export {
   updateSummaryOnEventCompletion,
   recalculateSummary,
   checkIdleBunnies,
+  manualCheckIdleBunnies,
   uploadBunnyAvatar,
   deleteBunnyAvatar
 };
