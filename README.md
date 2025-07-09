@@ -66,6 +66,7 @@ Visit `http://localhost:4200` to see your bunnies! 🐰
 - **Play with bunnies** by pairing them with other bunnies
 - **Real-time scoring** based on activities
 - **Automatic happiness calculations** via Cloud Functions
+- **Idle system** - bunnies lose happiness if not cared for regularly
 
 ### ⚙️ **Configuration**
 - **Customizable scoring system** for different activities
@@ -86,6 +87,7 @@ Visit `http://localhost:4200` to see your bunnies! 🐰
 - **Firestore** for real-time data storage
 - **Event-driven architecture** for happiness calculations
 - **Automatic summary updates** for performance
+- **Cron-based idle system** that runs every hour to check for neglected bunnies
 
 ### Data Flow
 1. **User Action** → Feed/Play with bunny
