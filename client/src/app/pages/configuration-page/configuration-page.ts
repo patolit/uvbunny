@@ -111,7 +111,6 @@ export class ConfigurationPage implements OnInit, OnDestroy {
           next: () => {
             // Reload to get the updated configuration
             this.loadConfiguration();
-            console.log('Configuration saved successfully!');
           },
           error: (error) => {
             console.error('Error saving configuration:', error);
@@ -159,7 +158,6 @@ export class ConfigurationPage implements OnInit, OnDestroy {
 
             // Reload configuration
             this.loadConfiguration();
-            console.log('Configuration reset to defaults!');
           },
           error: (error) => {
             console.error('Error resetting configuration:', error);

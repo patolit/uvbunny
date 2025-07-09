@@ -81,11 +81,9 @@ export class BunnyTable implements OnInit, OnChanges, OnDestroy, AfterViewInit {
     private setupScrollListener(): void {
     // Use the ViewChild reference to get the table container element
     if (this.tableContainerRef && this.tableContainerRef.nativeElement) {
-      console.log('Setting up scroll listener on table container');
       this.tableContainerRef.nativeElement.addEventListener('scroll', (event: Event) => {
         const target = event.target as HTMLElement;
         if (this.isNearBottomOfElement(target)) {
-          console.log('Table scroll detected near bottom, triggering loadMore');
           this.triggerLoadMore();
         }
       });
@@ -98,7 +96,6 @@ export class BunnyTable implements OnInit, OnChanges, OnDestroy, AfterViewInit {
   onWindowScroll(): void {
     // Also check window scroll as fallback
     if (this.isNearBottom()) {
-      console.log('Window scroll detected near bottom, triggering loadMore');
       this.triggerLoadMore();
     }
   }
@@ -107,18 +104,15 @@ export class BunnyTable implements OnInit, OnChanges, OnDestroy, AfterViewInit {
     // Prevent multiple rapid calls (minimum 200ms between calls)
     const now = Date.now();
     if (now - this.lastLoadMoreTime < 200) {
-      console.log('LoadMore called too quickly, ignoring');
       return;
     }
 
     // Only trigger if we have more data to load and not currently loading
     if (!this.hasMore || this.isLoading) {
-      console.log('Not triggering loadMore - hasMore:', this.hasMore, 'isLoading:', this.isLoading);
       return;
     }
 
     this.lastLoadMoreTime = now;
-    console.log('Triggering loadMore event');
     this.loadMore.emit();
   }
 
@@ -135,16 +129,6 @@ export class BunnyTable implements OnInit, OnChanges, OnDestroy, AfterViewInit {
     const scrollHeight = element.scrollHeight;
     const clientHeight = element.clientHeight;
     const isNear = scrollTop + clientHeight >= scrollHeight - threshold;
-
-    console.log('isNearBottomOfElement check:', {
-      scrollTop,
-      scrollHeight,
-      clientHeight,
-      threshold,
-      isNear,
-      calculation: scrollTop + clientHeight,
-      comparison: scrollHeight - threshold
-    });
 
     return isNear;
   }

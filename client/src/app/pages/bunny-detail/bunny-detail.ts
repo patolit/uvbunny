@@ -103,12 +103,10 @@ export class BunnyDetail implements OnInit, OnDestroy {
       event.stopPropagation();
     }
     this.loadingStates.feedLettuce = true;
-    console.log('Button clicked: Feeding lettuce to bunny:', bunnyId);
     this.firebaseService.feedBunny(bunnyId, 'lettuce')
       .pipe(take(1))
       .subscribe({
         next: () => {
-          console.log('Fed lettuce to bunny');
           this.loadingStates.feedLettuce = false;
         },
         error: (error) => {
@@ -127,7 +125,6 @@ export class BunnyDetail implements OnInit, OnDestroy {
       .pipe(take(1))
       .subscribe({
         next: () => {
-          console.log('Fed carrot to bunny');
           this.loadingStates.feedCarrot = false;
         },
         error: (error) => {
@@ -155,11 +152,10 @@ export class BunnyDetail implements OnInit, OnDestroy {
       this.firebaseService.playWithBunny(this.currentBunny.id!, partnerId)
         .pipe(take(1))
         .subscribe({
-          next: () => {
-            console.log('Played with bunny partner');
-            this.showPlayModal = false;
-            this.loadingStates.play = false;
-          },
+                  next: () => {
+          this.showPlayModal = false;
+          this.loadingStates.play = false;
+        },
           error: (error) => {
             console.error('Error playing with bunny:', error);
             this.loadingStates.play = false;
@@ -177,7 +173,6 @@ export class BunnyDetail implements OnInit, OnDestroy {
       .pipe(take(1))
       .subscribe({
         next: () => {
-          console.log('Petted bunny');
           this.loadingStates.pet = false;
         },
         error: (error) => {
@@ -196,7 +191,6 @@ export class BunnyDetail implements OnInit, OnDestroy {
       .pipe(take(1))
       .subscribe({
         next: () => {
-          console.log('Groomed bunny');
           this.loadingStates.groom = false;
         },
         error: (error) => {

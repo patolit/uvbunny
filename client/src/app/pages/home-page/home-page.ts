@@ -82,7 +82,7 @@ export class HomePage implements OnInit, OnDestroy {
           if (summaryData) {
             this.totalAvailableBunnies = summaryData.totalBunnies;
             this.summaryAverageHappiness = summaryData.averageHappiness;
-            console.log(`Summary data loaded: ${summaryData.totalBunnies} bunnies, ${summaryData.averageHappiness}% average happiness`);
+
             this.updatePaginationState();
             this.cdr.detectChanges(); // Trigger change detection
           }
@@ -110,7 +110,7 @@ export class HomePage implements OnInit, OnDestroy {
     const newBunnies = realTimeBunnies.filter(b => !currentBunnyIds.has(b.id));
 
     if (newBunnies.length > 0) {
-      console.log(`Found ${newBunnies.length} new bunnies, adding to current view`);
+
 
       // Add new bunnies to the beginning of the list (most recent first)
       // Use a Map to ensure no duplicates by ID
@@ -312,7 +312,6 @@ export class HomePage implements OnInit, OnDestroy {
   onBunnyAdded(): void {
     // The real-time subscription will handle the new bunny automatically
     // New bunnies will appear at the top of the current view
-    console.log('Bunny added - real-time update will handle it');
   }
 
   dismissNewBunnyNotification(): void {
@@ -324,9 +323,13 @@ export class HomePage implements OnInit, OnDestroy {
     const ids = this.allBunnies.map(b => b.id).filter(id => id);
     const uniqueIds = new Set(ids);
     if (ids.length !== uniqueIds.size) {
-      console.warn(`Duplicate bunnies detected! Total: ${ids.length}, Unique: ${uniqueIds.size}`);
+      // Duplicates detected - this should not happen with current deduplication logic
       const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
-      console.warn('Duplicate IDs:', duplicates);
+      // Log to console only in development mode
+      if (typeof ngDevMode === 'undefined' || ngDevMode) {
+        console.warn(`Duplicate bunnies detected! Total: ${ids.length}, Unique: ${uniqueIds.size}`);
+        console.warn('Duplicate IDs:', duplicates);
+      }
     }
   }
 

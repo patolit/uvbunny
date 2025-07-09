@@ -71,7 +71,6 @@ export class AddBunnyModal {
           // Close modal and emit event
           this.closeModal();
           this.bunnyAdded.emit();
-          console.log('Bunny added successfully!');
         },
         error: (error) => {
           console.error('Error adding bunny:', error);

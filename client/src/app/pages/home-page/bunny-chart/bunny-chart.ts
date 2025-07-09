@@ -66,16 +66,10 @@ export class BunnyChart implements OnDestroy, AfterViewInit, OnChanges {
     // The horizontal scroll happens on the .chart-bars element, not .chart-scroll-container
     const chartBars = this.elementRef.nativeElement.querySelector('.chart-bars');
     if (chartBars) {
-      console.log('Setting up scroll listener on .chart-bars element');
+
       chartBars.addEventListener('scroll', (event: Event) => {
         const target = event.target as HTMLElement;
-        console.log('Scroll event detected on chart-bars:', {
-          scrollLeft: target.scrollLeft,
-          scrollWidth: target.scrollWidth,
-          clientWidth: target.clientWidth
-        });
         if (this.isNearRightEdge(target)) {
-          console.log('Chart scroll detected near right edge, triggering loadMore');
           this.triggerLoadMore();
         }
       });
@@ -100,17 +94,12 @@ export class BunnyChart implements OnDestroy, AfterViewInit, OnChanges {
     const barsWidth = chartBars.scrollWidth;
     const barWidth = this.getBarWidth(); // Get current bar width based on screen size
 
-    console.log(`Chart space check: container=${containerWidth}px, bars=${barsWidth}px, barWidth=${barWidth}px`);
-
     // Calculate how many bars can fit in the container
     const barsThatCanFit = Math.floor(containerWidth / barWidth);
     const currentBars = this.bunnies.length;
 
-    console.log(`Bars that can fit: ${barsThatCanFit}, Current bars: ${currentBars}`);
-
     // If we have space for more bars and we have more bunnies to load, load them
     if (barsThatCanFit > currentBars && this.hasMore && !this.isLoading) {
-      console.log(`Space available for ${barsThatCanFit - currentBars} more bars, loading more bunnies`);
       this.triggerLoadMore();
     }
   }
@@ -134,16 +123,6 @@ export class BunnyChart implements OnDestroy, AfterViewInit, OnChanges {
     const clientWidth = element.clientWidth;
     const isNear = scrollLeft + clientWidth >= scrollWidth - threshold;
 
-    console.log('isNearRightEdge check:', {
-      scrollLeft,
-      scrollWidth,
-      clientWidth,
-      threshold,
-      isNear,
-      calculation: scrollLeft + clientWidth,
-      comparison: scrollWidth - threshold
-    });
-
     return isNear;
   }
 
@@ -151,7 +130,6 @@ export class BunnyChart implements OnDestroy, AfterViewInit, OnChanges {
     // Prevent multiple rapid calls (minimum 200ms between calls)
     const now = Date.now();
     if (now - this.lastLoadMoreTime < 200) {
-      console.log('Chart: LoadMore called too quickly, ignoring');
       return;
     }
     this.lastLoadMoreTime = now;
