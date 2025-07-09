@@ -15,7 +15,8 @@ import {
   processBunnyEvent,
   calculateSummary,
   updateSummaryOnEventCompletion,
-  recalculateSummary
+  recalculateSummary,
+  checkIdleBunnies
 } from './bunny-functions';
 
 // Start writing functions
@@ -41,5 +42,6 @@ export {
   processBunnyEvent,
   calculateSummary,
   updateSummaryOnEventCompletion,
-  recalculateSummary
+  recalculateSummary,
+  checkIdleBunnies
 };

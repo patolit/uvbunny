@@ -1,6 +1,9 @@
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import * as admin from 'firebase-admin';
 import { EventStatus, BunnyEvent } from './types';
+
+// Configuration for idle events
+const IDLE_HAPPINESS_DECREASE = 1; // Decrease happiness by 1 point for being idle
 import {
   getBunnyInTransaction,
   getConfiguration,
@@ -33,7 +36,7 @@ export const processBunnyEvent = onDocumentCreated(
         // Read bunny data within transaction
         const bunny = await getBunnyInTransaction(transaction, eventData.bunnyId);
 
-        // Validate event timing (only for feed and play events)
+        // Validate event timing (only for feed and play events, not for system-generated idle events)
         if (eventData.eventType === 'feed' || eventData.eventType === 'play') {
           const validation = validateEventTiming(bunny, eventData.eventType, currentTime);
           if (!validation.isValid) {
@@ -121,6 +124,16 @@ export const processBunnyEvent = onDocumentCreated(
             happiness: newPartnerHappiness,
             playMates: partnerPlayMates,
             lastPlay: currentTime
+          };
+
+        } else if (eventData.eventType === 'idle') {
+          // Idle events decrease happiness by 1 point
+          happinessIncrease = -IDLE_HAPPINESS_DECREASE; // Negative value for decrease
+
+          // Update bunny with new happiness (no timestamp updates for idle)
+          const newHappiness = calculateNewHappiness(bunny.happiness, happinessIncrease);
+          bunnyUpdates = {
+            happiness: newHappiness
           };
 
         } else {

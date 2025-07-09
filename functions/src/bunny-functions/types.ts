@@ -2,7 +2,7 @@ export type EventStatus = "pending" | "processing" | "finished" | "error" | "rej
 
 export interface BunnyEvent {
   bunnyId: string;
-  eventType: "feed" | "play" | "pet" | "groom";
+  eventType: "feed" | "play" | "idle";
   eventData?: {
     feedType?: "carrot" | "lettuce";
     playedWithBunnyId?: string;

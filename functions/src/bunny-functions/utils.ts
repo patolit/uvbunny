@@ -165,7 +165,7 @@ export function shouldRejectEvent(
  */
 export function validateEventTiming(
   bunny: Bunny,
-  eventType: 'feed' | 'play',
+  eventType: 'feed' | 'play' | 'idle',
   currentTime: admin.firestore.Timestamp
 ): { isValid: boolean; reason?: string } {
   if (eventType === 'feed') {
@@ -182,6 +182,9 @@ export function validateEventTiming(
         reason: `Bunny was played with too recently. Minimum interval: ${MIN_PLAY_INTERVAL / 1000} seconds`
       };
     }
+  } else if (eventType === 'idle') {
+    // Idle events are system-generated and don't need timing validation
+    return { isValid: true };
   }
 
   return { isValid: true };
