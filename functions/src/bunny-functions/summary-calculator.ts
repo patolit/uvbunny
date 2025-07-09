@@ -1,10 +1,9 @@
 import { onDocumentWritten, onDocumentUpdated } from 'firebase-functions/v2/firestore';
 import { onCall } from 'firebase-functions/v2/https';
 import * as admin from 'firebase-admin';
-import { SummaryData, BunnyEvent } from './types';
+import { BunnyEvent } from './types';
 import {
   initializeSummaryData,
-  ensureSummaryDataExists,
   updateSummaryForNewBunny,
   updateSummaryForDeletedBunny,
   updateSummaryForEventCompletion
