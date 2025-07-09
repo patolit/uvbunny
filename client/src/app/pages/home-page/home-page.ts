@@ -22,7 +22,6 @@ export class HomePage implements OnInit, OnDestroy {
   error = '';
   showAddModal = false;
   initialView: 'chart' | 'table' | 'pen' = 'chart';
-  showNewBunnyNotification = false;
 
   // Pagination state
   private paginationState: InfiniteScrollState = {
@@ -134,11 +133,7 @@ export class HomePage implements OnInit, OnDestroy {
       this.allBunnies = Array.from(bunnyMap.values());
       this.paginationState.loadedCount = this.allBunnies.length;
 
-      // Show notification
-      this.showNewBunnyNotification = true;
-      setTimeout(() => {
-        this.showNewBunnyNotification = false;
-      }, 3000); // Hide after 3 seconds
+
 
       // Update pagination state after adding new bunnies
       this.updatePaginationState();
@@ -314,9 +309,7 @@ export class HomePage implements OnInit, OnDestroy {
     // New bunnies will appear at the top of the current view
   }
 
-  dismissNewBunnyNotification(): void {
-    this.showNewBunnyNotification = false;
-  }
+
 
   // Debug method to check for duplicates
   private checkForDuplicates(): void {

@@ -17,12 +17,7 @@
     </button>
   </div>
 
-  <!-- New Bunny Notification -->
-  <div *ngIf="showNewBunnyNotification" class="alert alert-success alert-dismissible fade show text-center">
-    <i class="bi bi-heart-fill me-2"></i>
-    New bunny added! It will appear at the top of your list.
-    <button type="button" class="btn-close" (click)="dismissNewBunnyNotification()"></button>
-  </div>
+
 
   <!-- Empty State - No Bunnies -->
   <div *ngIf="!loading && !error && ((bunnies$ | async)?.length ?? 0) === 0" class="empty-state">
