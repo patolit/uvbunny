@@ -8,10 +8,7 @@
  * - Add color validation and constraints
  */
 
-export interface BunnyColor {
-  name: string;
-  hex: string;
-}
+import { BunnyColor } from '../types';
 
 export const BUNNY_COLORS: BunnyColor[] = [
   { name: 'Brown', hex: '#8B4513' },

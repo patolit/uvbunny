@@ -1,21 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Firestore, collection, collectionData, doc, addDoc, updateDoc, deleteDoc, query, orderBy, limit, startAfter, getDocs, QueryDocumentSnapshot, DocumentData } from '@angular/fire/firestore';
 import { Observable, map, from } from 'rxjs';
-import { Bunny } from './types';
-
-export interface InfiniteScrollState {
-  lastDocument?: QueryDocumentSnapshot<DocumentData>;
-  hasMore: boolean;
-  isLoading: boolean;
-  loadedCount: number;
-}
-
-export interface InfiniteScrollResult {
-  bunnies: Bunny[];
-  lastDocument?: QueryDocumentSnapshot<DocumentData>;
-  hasMore: boolean;
-  totalLoaded: number;
-}
+import { Bunny, InfiniteScrollState, InfiniteScrollResult } from '../types';
 
 @Injectable({
   providedIn: 'root'

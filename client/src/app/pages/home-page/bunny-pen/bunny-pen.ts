@@ -1,15 +1,8 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { Bunny } from '../../../services/firebase';
+import { Bunny, BunnyPosition } from '../../../types';
 import { getBunnyColor } from '../../../utils/bunny-colors';
-
-interface BunnyPosition {
-  bunny: Bunny;
-  x: number;
-  y: number;
-  id: string;
-}
 
 @Component({
   selector: 'app-bunny-pen',

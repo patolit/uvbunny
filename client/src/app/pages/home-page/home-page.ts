@@ -7,7 +7,8 @@ import { BunnyViewer } from './bunny-viewer/bunny-viewer';
 import { AddBunnyModal } from './add-bunny-modal/add-bunny-modal';
 import { Observable, Subscription, BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { BunnyService, InfiniteScrollState, InfiniteScrollResult } from '../../services/bunny';
+import { BunnyService } from '../../services/bunny';
+import { InfiniteScrollState, InfiniteScrollResult } from '../../types';
 import { QueryDocumentSnapshot, DocumentData } from '@angular/fire/firestore';
 
 @Component({
