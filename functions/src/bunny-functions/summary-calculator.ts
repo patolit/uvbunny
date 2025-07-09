@@ -53,7 +53,7 @@ export const calculateSummary = onDocumentWritten(
  * Cloud Function triggered when bunny events are finished
  */
 export const updateSummaryOnEventCompletion = onDocumentUpdated(
-  'bunnyEvents/{eventId}',
+  'bunnieEvent/{eventId}',
   async (event) => {
     try {
       const eventId = event.params.eventId;

@@ -1,7 +1,6 @@
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import * as admin from 'firebase-admin';
 import { EventStatus, BunnyEvent } from './types';
-import { updateSummaryForEventCompletion } from './sumny-helpers';
 
 // Configuration for idle events
 const IDLE_HAPPINESS_DECREASE = 1; // Decrease happiness by 1 point for being idle
@@ -175,8 +174,8 @@ export const processBunnyEvent = onDocumentCreated(
         await updateEventStatusInTransaction(transaction, eventRef, 'finished', eventUpdateData);
       });
 
-      // Update summary after event is processed
-      await updateSummaryForEventCompletion(eventData);
+      // Note: Summary will be updated automatically by the updateSummaryOnEventCompletion trigger
+      // when the event status changes to 'finished'
 
     } catch (error: any) {
       // Set event status to 'error'
