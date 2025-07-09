@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { Functions, httpsCallable } from '@angular/fire/functions';
 import { BunnyService } from './bunny';
 import { ConfigurationService } from './configuration';
 import { ActivityService } from './activity';
@@ -14,6 +15,7 @@ export class FirebaseService {
   private configurationService = inject(ConfigurationService);
   private activityService = inject(ActivityService);
   private summaryService = inject(SummaryService);
+  private functions = inject(Functions);
 
   // Bunny data methods
   getBunnies(): Observable<Bunny[]> {
@@ -69,6 +71,21 @@ export class FirebaseService {
 
   getSummaryDataRealtime(): Observable<SummaryData | null> {
     return this.summaryService.getSummaryDataRealtime();
+  }
+
+  // Avatar upload method
+  uploadBunnyAvatar(bunnyId: string, imageData: string, mimeType: string): Observable<any> {
+    const uploadAvatar = httpsCallable(this.functions, 'uploadBunnyAvatar');
+    return new Observable(observer => {
+      uploadAvatar({ bunnyId, imageData, mimeType })
+        .then(result => {
+          observer.next(result.data);
+          observer.complete();
+        })
+        .catch(error => {
+          observer.error(error);
+        });
+    });
   }
 }
 

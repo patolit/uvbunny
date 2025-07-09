@@ -1,0 +1,18 @@
+<div class="card text-center p-3 avatar-card">
+  <div class="avatar-img mb-2">
+    <img *ngIf="avatarUrl; else noAvatar" [src]="avatarUrl" alt="Bunny Avatar" class="rounded-circle border" width="40" height="40" />
+    <ng-template #noAvatar>
+      <div class="no-avatar d-flex align-items-center justify-content-center" style="height:40px; width:40px;">
+        <span class="text-muted">no avatar</span>
+      </div>
+    </ng-template>
+  </div>
+  <div class="mt-2">
+    <label class="btn btn-sm btn-outline-primary mb-0" [class.disabled]="uploading">
+      <span *ngIf="!uploading">Upload Avatar</span>
+      <span *ngIf="uploading"><span class="spinner-border spinner-border-sm"></span> Uploading...</span>
+      <input type="file" accept="image/*" (change)="onFileSelected($event)" [disabled]="uploading" hidden />
+    </label>
+  </div>
+  <div *ngIf="error" class="text-danger small mt-1">{{ error }}</div>
+</div>

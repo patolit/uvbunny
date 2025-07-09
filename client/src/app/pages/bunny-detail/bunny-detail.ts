@@ -6,10 +6,11 @@ import { FirebaseService, Bunny } from '../../services/firebase';
 import { Observable, Subscription, switchMap, of, take } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { PlayPartnerModal } from './play-partner-modal/play-partner-modal';
+import { AvatarComponent } from './avatar/avatar.component';
 
 @Component({
   selector: 'app-bunny-detail',
-  imports: [CommonModule, FormsModule, RouterModule, PlayPartnerModal],
+  imports: [CommonModule, FormsModule, RouterModule, PlayPartnerModal, AvatarComponent],
   templateUrl: './bunny-detail.html',
   styleUrl: './bunny-detail.scss'
 })
@@ -176,6 +177,12 @@ export class BunnyDetail implements OnInit, OnDestroy, OnChanges {
             this.loadingStates.play = false;
           }
         });
+    }
+  }
+
+  onAvatarUploaded(newUrl: string) {
+    if (this.currentBunny) {
+      this.currentBunny.avatarUrl = newUrl;
     }
   }
 

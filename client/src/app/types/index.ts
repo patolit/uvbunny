@@ -8,6 +8,8 @@ export interface Bunny {
   playMates?: string[]; // Array of bunny IDs that this bunny has played with
   lastFeed?: any; // Firebase Timestamp
   lastPlay?: any; // Firebase Timestamp
+  avatarUrl?: string;
+  avatarUpdatedAt?: any; // Firebase Timestamp
 }
 
 export interface BunnyEvent {

@@ -19,6 +19,12 @@ import {
   checkIdleBunnies
 } from './bunny-functions';
 
+// Import avatar functions
+import {
+  uploadBunnyAvatar,
+  deleteBunnyAvatar
+} from './bunny-functions/avatar-upload';
+
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
 
@@ -43,5 +49,7 @@ export {
   calculateSummary,
   updateSummaryOnEventCompletion,
   recalculateSummary,
-  checkIdleBunnies
+  checkIdleBunnies,
+  uploadBunnyAvatar,
+  deleteBunnyAvatar
 };

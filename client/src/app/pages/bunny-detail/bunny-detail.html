@@ -40,6 +40,12 @@
             </h2>
           </div>
           <div class="card-body">
+            <!-- Avatar Section -->
+            <bunny-avatar
+              [avatarUrl]="bunny.avatarUrl || null"
+              [bunnyId]="bunny.id!"
+              (avatarUploaded)="onAvatarUploaded($event)">
+            </bunny-avatar>
             <!-- Bunny Info -->
             <div class="row mb-4">
               <div class="col-md-6">

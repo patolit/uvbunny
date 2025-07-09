@@ -2,7 +2,7 @@ export type EventStatus = "pending" | "processing" | "finished" | "error" | "rej
 
 export interface BunnyEvent {
   bunnyId: string;
-  eventType: "feed" | "play" | "idle";
+  eventType: "feed" | "play" | "idle" | "avatar_upload";
   eventData?: {
     feedType?: "carrot" | "lettuce";
     playedWithBunnyId?: string;
@@ -21,6 +21,12 @@ export interface BunnyEvent {
   partnerHappinessIncrease?: number;
   newPartnerHappiness?: number;
   partnerDeltaHappiness?: number; // Change in happiness for partner bunny (for play events)
+  // Avatar upload specific fields
+  avatarUrl?: string;
+  originalSize?: number;
+  processedSize?: number;
+  originalMimeType?: string;
+  processedMimeType?: string;
 }
 
 export interface Bunny {
@@ -32,6 +38,8 @@ export interface Bunny {
   playMates?: string[];
   lastFeed?: FirebaseFirestore.Timestamp;
   lastPlay?: FirebaseFirestore.Timestamp;
+  avatarUrl?: string;
+  avatarUpdatedAt?: FirebaseFirestore.Timestamp;
 }
 
 export interface Configuration {

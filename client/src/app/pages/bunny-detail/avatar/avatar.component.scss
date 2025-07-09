@@ -1,0 +1,22 @@
+.avatar-card {
+  max-width: 200px;
+  margin: 0 auto;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.avatar-img {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 40px;
+}
+.no-avatar {
+  background: #f8f9fa;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 0.9rem;
+}
+img.rounded-circle {
+  object-fit: cover;
+  background: #fff;
+}
